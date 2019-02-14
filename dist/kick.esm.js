@@ -241,6 +241,7 @@ var kick = {
     '^^': '^dblclick',
     '^_': '^contextmenu',
     '@': '@value',
+    '@x': '@checked',
     ':': ':text',
     '::': ':html',
     '$': ':html',
@@ -512,10 +513,9 @@ var classCallCheck = function (instance, Constructor) {
 
 function getInputValue(el) {
   var results = [];
-  if (el.type === 'checkbox') {
+  if (el.type === "checkbox") {
     return el.checked;
-  } else if (el.type === 'select-multiple') {
-
+  } else if (el.type === "select-multiple") {
     el.options.forEach(function (option) {
       if (option.selected) {
         results.push(option.value);
@@ -713,7 +713,7 @@ var Binding = function () {
   Binding.prototype.bind = function bind() {
     this.parseTarget();
 
-    if (this.binder.hasOwnProperty('bind')) {
+    if (this.binder.hasOwnProperty("bind")) {
       this.binder.bind.call(this, this.el);
     }
 

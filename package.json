@@ -1,0 +1,58 @@
+{
+  "name": "@radkick/kick",
+  "description": "Short syntax html data binding + templating solution using javascript, a variation of rivetsjs and tinybind.",
+  "version": "0.9.81",
+  "author": "Ritesh Pahwa",
+  "contributors": [
+    "Ritesh Pahwa",
+    "Michael Richards",
+    "Luiz Américo Pereira Câmara"
+  ],
+  "url": "https://github.com/radkick/kickjs",
+  "homepage": "http://kickjs.com/",
+  "main": "./dist/kick.js",
+  "keywords": [
+    "kick",
+    "kickjs",
+    "@radkick/kick",
+    "html bind",
+    "js bind",
+    "javascript bind",
+    "rivets",
+    "tinybind",
+    "knockout",
+    "vuejs",
+    "angular",
+    "angularJS",
+    "react"
+  ],
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/radkick/kickjs/blob/master/LICENSE"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/radkick/kickjs.git"
+  },
+  "scripts": {
+    "pretest": "node tools/build.js --development",
+    "test": "phantomjs node_modules/mocha-phantomjs-core/mocha-phantomjs-core.js spec/runner.html",
+    "build": "node tools/build",
+    "dev": "webpack --watch --env.dev"
+  },
+  "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-plugin-external-helpers": "^6.22.0",
+    "babel-preset-env": "^1.7.0",
+    "mocha": "^5.2.0",
+    "mocha-phantomjs-core": "^1.3.1",
+    "phantomjs-prebuilt": "^2.1.12",
+    "rollup": "^0.59.4",
+    "rollup-plugin-babel": "^3.0.4",
+    "rollup-plugin-uglify": "^4.0.0",
+    "should": "~4.0.4",
+    "sinon": "~1.10.2"
+  }
+}

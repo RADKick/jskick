@@ -1,0 +1,77 @@
+<html>
+<head>
+  <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+  <div kick-app>
+    <button ^="push">Push</button>
+    <button ^="pop">Pop</button>
+    <button ^="shift">Shift</button>
+    <button ^="unshift">Unshift</button>
+    <button ^="splice">Splice</button>
+    <button ^="sort">Sort</button>
+    <button ^="reset">Reset</button>
+    <br>
+    <input @x="chk" type="checkbox"> If
+    <input @x="show" type="checkbox"> Show
+    <input @x="hide" type="checkbox"> Hide
+    <input @x="bold" type="checkbox"> Bold
+    <input @x="lg" type="checkbox"> Large
+    <input @x="disb" type="checkbox"> Disable Input
+    <hr>
+    <div ?="chk">You clicked on if condition checkbox</div>
+    <div ?="chk === true">When if is true with a condition (chk === true)</div>
+    <div +="show">You clicked on show checkbox!!</div>
+    <div -="hide">Click on hide checkbox to hide this text</div>
+    <hr>
+    Enter name (htm alllowed): <input @="name" ~="disb" placeholder="Enter name.."><br>
+    Text Bind: <span :="name"></span><br>
+    Toggles with disable checkbox<input @="name" ~~="disb">
+    <h2 ::="name"></h2>
+    <hr>
+    Select to push a item <select ^change="subvm.selChange" @="subvm.selVal">
+      <option value="1">Option Val = 1</option>
+      <option value="2">Option Val = 2</option>
+      <option value="3">Option Val = 3</option>
+      <option value="4">Option Val = 4</option>
+      <option value="5">Option Val = 5</option>
+    </select><br>
+    Item List
+    <div *myitem="items">
+        <input @="myitem.name">
+        <span ^^="alert(item)" ^="alert" .bold="bold" .lg="lg">Click + Doubleclick handler $index {{$index}} / {{myitem.name}} / {{myitem.value}}</span>
+    </div>
+    <h4>With default $item in *="items" instead of *myitem="items"</h4>
+    <table ..width="wid">
+        <tr><th>Index</th><th>Name</th><th>Value</th><th>Actions</th></tr>
+        <tr *="items" .bold="bold" class="gr">
+        <td ^^="alert">$item index {{$index}}</td>
+        <td .lg="lg"><span +="$item.isEdited"><input @="$item.name" ></span><span -="$item.isEdited">{{$item.name}}</span></td>
+        <td :="$item.value"></td>
+        <td><button ^="edit">Edit</button> <button ^="del">Del</button></td>
+      </tr>
+    </table>
+    <h5>Case sensitive test for *myItem</h5>
+    <table ..width="'100%'">
+      <tr><th>Index</th><th>Name</th><th>Value</th><th>Actions</th></tr>
+      <tr *="myItem in items" .bold="bold" class="gr">
+        <td ^^="alert">$item index {{$index}}</td>
+        <td .lg="lg"><span +="myItem.isEdited"><input @="myItem.name" ></span><span -="myItem.isEdited">{{myItem.name}}</span></td>
+        <td :="myItem.value"></td>
+        <!-- <td><button ^="edit" :="myItem.isEdited | call btnEditSave myItem"></button> <button ^="del">Del</button></td> -->
+        <td><button ^="edit" :="btnEditSave(myItem, myItem.name, myItem.isEdited, 'B', 10)"></button> <button ^="del">Del</button></td>
+      </tr>
+    </table>
+    <hr>
+    Selected Value: <div :="vm.selVal"></div>
+    <!-- <p ..="modelColor.value | toColorStyle">{modelCounter.value}</p> -->
+    <div>
+        <!-- THE COMPONENT NEEDS TO BE INSIDE A SEPARATE ELEMENT OR ELSE
+             THE P TAG BELOW GETS REMOVED -->
+        <app-counter counter-attr="modelCounter" color-attr="modelColor"/>
+    </div>
+  </div>
+  <script src="../dist/kick.js"></script>
+  <script src="index.js"></script>
+</body>
+</html>
