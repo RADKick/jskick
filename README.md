@@ -10,7 +10,9 @@ Simple drag drop https://jsfiddle.net/riteshpahwa/ecn1fq6j/
 
 Not so simple drag drop http://jsfiddle.net/riteshpahwa/qym37hbf/119/
 
-## CAUTION: Not ready for prod. Need help with few more things, like expression binding, testing, etc.
+## CAUTION: 
+
+Not ready for prod. Need help with few more things, like expression binding, testing, etc.
 
 ## Install
 
