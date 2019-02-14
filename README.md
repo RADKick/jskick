@@ -1,6 +1,6 @@
 # kick
 
-kick.js is a variation of Rivets.js and tinybind, a lightweight data binding and templating system that facilitates building data-driven views. Ispired by angular, react, angular-lite and vuejs. It is agnostic about every aspect of a front-end MV(C|VM|P) stack, making it easy to introduce it into your current workflow or to use it as part of your own custom front-end stack comprised of other libraries.
+kick.js is a variation of Rivets.js and tinybind, a lightweight data binding and templating system that facilitates building data-driven views. Inspired by many libraries like angular, react, angular-lite and vuejs. It is agnostic about every aspect of a front-end MV(C|VM|P) stack, making it easy to introduce it into your current workflow or to use it as part of your own custom front-end stack comprised of other libraries.
 
 If you like short syntax, and symbols for binding html then you will love it.
 
@@ -13,6 +13,7 @@ Not so simple drag drop http://jsfiddle.net/riteshpahwa/qym37hbf/119/
 ## CAUTION: 
 
 Not ready for prod. Need help with few more things, like expression binding, testing, etc.
+
 
 ## Install
 
