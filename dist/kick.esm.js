@@ -298,7 +298,9 @@ var kick = {
         _this[option] = value;
       }
     });
-  }
+  },
+
+  router: {}
 };
 
 // Check if a value is an object than can be observed.
@@ -551,6 +553,8 @@ var Binding = function () {
     this.model = undefined;
     //newly added for fn args but not sure if this is the right way
     this.fnArgs = [];
+    this.locked = false;
+    this.subscribers = [];
   }
 
   // Observes the object keypath
@@ -652,6 +656,9 @@ var Binding = function () {
 
 
   Binding.prototype.set = function set$$1(value) {
+    if (this.locked) {
+      return;
+    }
     if (value instanceof Function && !this.binder.function) {
       var _value;
 
@@ -666,7 +673,10 @@ var Binding = function () {
     var routineFn = this.binder.routine || this.binder;
 
     if (routineFn instanceof Function) {
+      this.locked = true;
       routineFn.call(this, this.el, value);
+      this.callSubscribers(value);
+      this.locked = false;
     }
   };
 
@@ -772,6 +782,41 @@ var Binding = function () {
     } else {
       return getInputValue(el);
     }
+  };
+
+  // Subscribe to the value changes
+
+
+  Binding.prototype.subscribe = function subscribe(listener) {
+    var index = this.subscribers.push(listener) - 1;
+
+    // Provide handle back for removal of listener
+    return {
+      remove: function remove() {
+        delete this.subscribers[index];
+      }
+    };
+  };
+
+  // Call the subscribers
+
+
+  Binding.prototype.callSubscribers = function callSubscribers(value) {
+    // Cycle through subscribers queue, fire!
+    this.subscribers.forEach(function (item) {
+      item(value);
+    });
+  };
+
+  // Returns the fellow binding of a given type on same element
+
+
+  Binding.prototype.fellow = function fellow(type) {
+    var _this5 = this;
+
+    return this.view.bindings.find(function (x) {
+      return x.el === _this5.el && x.type === type;
+    });
   };
 
   return Binding;
@@ -1554,13 +1599,14 @@ var binders = {
   }
 };
 
+//import router from './router'
 //import components from './components'
 
 // Returns the public interface.
-
 kick.binders = binders;
 //kick.components = components
 kick.adapters['.'] = adapter;
+//kick.router = router
 
 // Binds some data to a template / element. Returns a kick.View instance.
 kick.bind = function (elm, models, options) {
