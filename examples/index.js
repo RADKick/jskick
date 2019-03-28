@@ -2,7 +2,7 @@ function getItems() {
     return [{name: 'x', value: 2} ,{name: 'y', value: 1} , {name: 'z', value: 3}]
   }
   var vm = {
-    search:'',
+    search:'', 
     selVals: [1,2,3,4,5],  
     subvm: {
       selVal: 2,
