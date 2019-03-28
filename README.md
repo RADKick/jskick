@@ -10,6 +10,8 @@ Simple drag drop https://jsfiddle.net/riteshpahwa/ecn1fq6j/
 
 Not so simple drag drop http://jsfiddle.net/riteshpahwa/qym37hbf/119/
 
+ToDo MVC with KickJS, pay attention to the simple syntax https://stackblitz.com/edit/js-r5mnzv
+
 ## CAUTION: 
 
 Not ready for prod. Need help with few more things, like expression binding, testing, etc.

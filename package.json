@@ -1,7 +1,7 @@
 {
   "name": "@radkick/kick",
   "description": "Short syntax html data binding + templating solution using javascript, a variation of rivetsjs and tinybind.",
-  "version": "0.9.81",
+  "version": "0.9.83",
   "author": "Ritesh Pahwa",
   "contributors": [
     "Ritesh Pahwa",

@@ -240,17 +240,20 @@ var kick = {
     '^': '^click',
     '^^': '^dblclick',
     '^_': '^contextmenu',
+    '^@': '^change',
+    '^+': '^focus',
+    '^-': '^blur',
     '@': '@value',
     '@x': '@checked',
     ':': ':text',
     '::': ':html',
     '$': ':html',
-    '-': ':hide',
     '+': ':show',
+    '-': ':hide',
     '~': ':disabled',
     '~~': ':enabled'
   },
-  // was starBinder in rivetsjs, in kickjs *(star) is used for binding so changing it to varBinder is an variable binder
+  // was starBinder in rivetsjs, in kickjs *(star) is used for binding so changing it to varBinder as an variable binder
   varBinderMap: {
     '.&': ':class-&',
     '..&': ':style-&',
@@ -551,10 +554,15 @@ var Binding = function () {
     this.formatters = formatters;
     this.formatterObservers = {};
     this.model = undefined;
-    //newly added for fn args but not sure if this is the right way
+
+    //new property in kick for fn args but not sure if this is the right way
     this.fnArgs = [];
-    this.locked = false;
+    //new property in kick for subscribers to get notified if value is changing specifically for jquery plugins
     this.subscribers = [];
+    //new property in kick for locking to avoid loops of updates, specifically for jquery plugins
+    this.locked = false;
+    // add object to hold listners so that they can be unbinded later
+    this.listeners = {};
   }
 
   // Observes the object keypath
@@ -656,9 +664,6 @@ var Binding = function () {
 
 
   Binding.prototype.set = function set$$1(value) {
-    if (this.locked) {
-      return;
-    }
     if (value instanceof Function && !this.binder.function) {
       var _value;
 
@@ -673,10 +678,8 @@ var Binding = function () {
     var routineFn = this.binder.routine || this.binder;
 
     if (routineFn instanceof Function) {
-      this.locked = true;
       routineFn.call(this, this.el, value);
       this.callSubscribers(value);
-      this.locked = false;
     }
   };
 
@@ -808,14 +811,39 @@ var Binding = function () {
     });
   };
 
-  // Returns the fellow binding of a given type on same element
+  // lock if not locked and returns false if already locked
 
 
-  Binding.prototype.fellow = function fellow(type) {
+  Binding.prototype.lock = function lock(locking) {
+    // return locked state if none provided
+    if (locking === undefined) {
+      return this.locked;
+    } else if (this.locked === true && locking === true) {
+      // already locked asking again for same lock state
+      return false;
+    }
+
+    return this.locked = locking;
+  };
+
+  // Returns the next of kin bindings on the same element
+
+
+  Binding.prototype.kins = function kins() {
     var _this5 = this;
 
-    return this.view.bindings.find(function (x) {
-      return x.el === _this5.el && x.type === type;
+    return this.view.bindings.filter(function (x) {
+      return x.el === _this5.el;
+    });
+  };
+  // Returns the binding of a given type on the same element
+
+
+  Binding.prototype.kin = function kin(type) {
+    var mappedType = kick.binderMap[type] || type;
+
+    return this.kins().find(function (x) {
+      return x.type === mappedType;
     });
   };
 
