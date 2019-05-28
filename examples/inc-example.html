@@ -1,0 +1,29 @@
+<html kick-app>    
+    <head :file="inc-head.html">        
+    </head>
+    <body class="text-center">        
+        <div class="cover-container d-flex h-100 p-3 mx-auto flex-column">
+            <kicker :file="inc-header.html"></kicker>
+        
+            <h1>Hello World! from Kickjs!</h1><br><br>
+            <main role="main" class="inner cover">
+            <h1 class="cover-heading">Cover your page.</h1>
+            <p class="lead">Cover is a one-page template for building simple and beautiful home pages. Download, edit the text, and add your own fullscreen background photo to make it your own.</p>
+            <p class="lead">
+                <a href="#" class="btn btn-lg btn-secondary">Learn more</a>
+            </p>
+            </main>
+            <div :file="inc-missing.html">
+                Should show here missing error when you view source of final html in browser
+            </div>
+                
+            <kicker :file="inc-footer.html"></kicker>
+        </div>
+    </body>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://getbootstrap.com/docs/4.0/assets/js/vendor/popper.min.js"></script>
+    <script src="https://getbootstrap.com/docs/4.0/dist/js/bootstrap.min.js"></script>
+
+    <script src="../dist/kick.js"></script>
+    <script>kick.bind('', {});</script>
+</html>

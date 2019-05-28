@@ -21,9 +21,9 @@
     <hr>
     Enter name (html is allowed): <input @="name" ~="disb" placeholder="Enter name.."><br>
     <small>Toggles with disable checkbox</small>
-    <input @="name" ~~="disb">
+    <input @="name" ~~="disb" :id="name">
     <br>
-    Text Bind: <span :="name"></span><br>
+    Text Bind: <span :="name" :title="name"></span><br>
     <h2>Html: <span ::="name"></span></h2>
     <small>Html binding (type html in text)</small>
     <hr>

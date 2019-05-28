@@ -138,7 +138,6 @@ const binders = {
       let data = {}
 
       //todo: add test and fix if necessary
-
       Object.keys(models).forEach(key => {
         if (key !== this.arg) {
           data[key] = models[key]
@@ -183,7 +182,7 @@ const binders = {
   ':html': (el, value) => {
     el.innerHTML = value != null ? value : ''
   },
-
+  
   // Shows the element when value is true.
   ':show': (el, value) => {
     el.style.display = value ? '' : 'none'
@@ -334,7 +333,7 @@ const binders = {
     } else {
       el.removeAttribute(this.arg)
     }
-  }
+  }  
 }
 
 export default binders

@@ -18,6 +18,9 @@ kick.bind = (elm, models, options) => {
   // if element then return itself
   elm = elm || '[kick-app]';
   let el = (elm.nodeType && elm.nodeType > 0) ? elm : document.querySelector(elm);
+  // max 2 tries to add newly added elements, can't do recursive as included file might have multiple ements and outerHTML doesn't support this 
+  kick.includeFile(el);
+  //kick.includeFile(el);
 
   let viewOptions = {}
   models = models || {}
@@ -92,6 +95,52 @@ kick.formatters.call = (value, ...args) => {
       return fn.apply(null, value, ...args);
   }
   */
+}
+
+kick.loadFile = (el, file) => {
+  /* Make an HTTP request using the attribute value as the file name: */
+  try {
+    let xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+      if (this.readyState == 4) {
+        if (this.status == 200) {
+          /* Remove the attribute, and call this function once more: */
+          if(el.tagName === 'KICKER'){
+            // replace el with new html
+            el.outerHTML = this.responseText;
+            // not sure about the below yet 
+            // kick.includeFile(el.parent);
+          } else {
+            el.removeAttribute(":file");
+            el.innerHTML = this.responseText;
+            kick.includeFile(el);
+          }
+        }
+        else if (this.status == 404) {el.innerHTML = '<!-- ' + this.responseURL + ' not found. -->';}
+        else {el.innerHTML = '<!-- ' + this.responseText + ' -->';}
+      }
+    } 
+    xhttp.open("GET", file, true);
+    xhttp.send();
+  } catch (e) {
+    el.innerHTML = '<!-- Unable to connect to server -->';
+  }
+}
+
+// Sets the element's HTML content from file.
+kick.includeFile = (el) => {
+  let z, i, elmnt, file;
+  /* Loop through a collection of all HTML elements: */
+  z = el.getElementsByTagName("*");
+
+  for (i = 0; i < z.length; i++) {
+    elmnt = z[i];
+    /*search for elements with a certain atrribute:*/
+    file = elmnt.getAttribute(":file");
+    if (file) {
+      kick.loadFile(elmnt, file);
+    }
+  }
 }
 
 export default kick

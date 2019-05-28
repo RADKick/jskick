@@ -1,7 +1,7 @@
 {
   "name": "@radkick/kick",
   "description": "Short syntax html data binding + templating solution using javascript, a variation of rivetsjs and tinybind.",
-  "version": "0.9.83",
+  "version": "0.9.85",
   "author": "Ritesh Pahwa",
   "contributors": [
     "Ritesh Pahwa",
@@ -40,6 +40,7 @@
     "pretest": "node tools/build.js --development",
     "test": "phantomjs node_modules/mocha-phantomjs-core/mocha-phantomjs-core.js spec/runner.html",
     "build": "node tools/build",
+    "examples": "http-server",
     "dev": "webpack --watch --env.dev"
   },
   "devDependencies": {

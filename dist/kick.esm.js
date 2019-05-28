@@ -277,7 +277,11 @@ var kick = {
   // back to using this binder.
   fallbackBinder: function fallbackBinder(el, value) {
     if (value != null) {
-      el.setAttribute(this.type, value);
+      var type = this.type;
+      if (type.substr(0, 1) === ':') {
+        type = type.substr(1);
+      }
+      el.setAttribute(type, value);
     } else {
       el.removeAttribute(this.type);
     }
@@ -1428,7 +1432,6 @@ var binders = {
       var data = {};
 
       //todo: add test and fix if necessary
-
       Object.keys(models).forEach(function (key) {
         if (key !== _this2.arg) {
           data[key] = models[key];
@@ -1641,6 +1644,9 @@ kick.bind = function (elm, models, options) {
   // if element then return itself
   elm = elm || '[kick-app]';
   var el = elm.nodeType && elm.nodeType > 0 ? elm : document.querySelector(elm);
+  // max 2 tries to add newly added elements, can't do recursive as included file might have multiple ements and outerHTML doesn't support this 
+  kick.includeFile(el);
+  //kick.includeFile(el);
 
   var viewOptions = {};
   models = models || {};
@@ -1724,6 +1730,57 @@ kick.formatters.call = function (value) {
       return fn.apply(null, value, ...args);
   }
   */
+};
+
+kick.loadFile = function (el, file) {
+  /* Make an HTTP request using the attribute value as the file name: */
+  try {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function () {
+      if (this.readyState == 4) {
+        if (this.status == 200) {
+          /* Remove the attribute, and call this function once more: */
+          if (el.tagName === 'KICKER') {
+            // replace el with new html
+            el.outerHTML = this.responseText;
+            // not sure about the below yet 
+            // kick.includeFile(el.parent);
+          } else {
+            el.removeAttribute(":file");
+            el.innerHTML = this.responseText;
+            kick.includeFile(el);
+          }
+        } else if (this.status == 404) {
+          el.innerHTML = '<!-- ' + this.responseURL + ' not found. -->';
+        } else {
+          el.innerHTML = '<!-- ' + this.responseText + ' -->';
+        }
+      }
+    };
+    xhttp.open("GET", file, true);
+    xhttp.send();
+  } catch (e) {
+    el.innerHTML = '<!-- Unable to connect to server -->';
+  }
+};
+
+// Sets the element's HTML content from file.
+kick.includeFile = function (el) {
+  var z = void 0,
+      i = void 0,
+      elmnt = void 0,
+      file = void 0;
+  /* Loop through a collection of all HTML elements: */
+  z = el.getElementsByTagName("*");
+
+  for (i = 0; i < z.length; i++) {
+    elmnt = z[i];
+    /*search for elements with a certain atrribute:*/
+    file = elmnt.getAttribute(":file");
+    if (file) {
+      kick.loadFile(elmnt, file);
+    }
+  }
 };
 
 export default kick;

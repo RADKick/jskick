@@ -80,7 +80,9 @@ const kick = {
   // back to using this binder.
   fallbackBinder: function(el, value) {
     if (value != null) {
-      el.setAttribute(this.type, value)
+      let type = this.type; 
+      if(type.substr(0,1) === ':'){ type = type.substr(1); }
+      el.setAttribute(type, value)
     } else {
       el.removeAttribute(this.type)
     }
