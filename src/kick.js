@@ -48,19 +48,24 @@ const kick = {
     '^-': '^blur',
     '@': '@value',
     '@x': '@checked',
+    '@-x': '@unchecked',
     ':' : ':text',
     '::' : ':html',
     '$' : ':html',
     '+': ':show',
     '-': ':hide',
     '~': ':disabled',
-    '~~': ':enabled'
+    '~~': ':enabled',
+    '-~': ':enabled'
     },
-    // was starBinder in rivetsjs, in kickjs *(star) is used for binding so changing it to varBinder as an variable binder
+    // was starBinder in rivetsjs, in kickjs *(star) is used for foreach binding so changing it to varBinder as an variable binder
     varBinderMap: {
       '.&': ':class-&',
+      '-.&': '-:class-&',
       '..&': ':style-&',
-      '::&': ':attr-&',
+      '-..&': '-:style-&',
+      ':&': ':attr-&',
+      '-:&': '-:attr-&',
     },
   // Default sightglass root interface.
   rootInterface: '.',
@@ -72,17 +77,32 @@ const kick = {
   handler: function(context, ev, binding) {
     //changing the order of returns as well as passed arguments first then $event
     //todo document this breakig change
-    const processedArgs = binding.parseFormatterArguments(binding.fnArgs, 0);
-    this.call(context, ...[...processedArgs, binding.view.models, ev])
+    const processedArgs = binding.parseFormatterArguments(binding.fnArgs, 0, ev, binding.view.models);
+    let fns = this.name.split(' ')
+    let fn = fns[fns.length - 1]
+    if(!fn || fn === ''){
+      //, binding.view.models, ev
+      this.call(context, ...[...processedArgs])
+    } else {
+      let ctx = binding.model
+      ctx[fn].call(ctx, ...[...processedArgs])
+    }
   },
 
   // Sets the attribute on the element. If no binder above is matched it will fall
   // back to using this binder.
   fallbackBinder: function(el, value) {
     if (value != null) {
-      let type = this.type; 
+      // is this a component
+      let type = this.type;
+      let comp = customElements.get(el.localName)
       if(type.substr(0,1) === ':'){ type = type.substr(1); }
-      el.setAttribute(type, value)
+      if(comp && comp.properties && comp.properties[type] !== undefined){
+        let mapType = comp.properties[type]; 
+        el[mapType] = value;
+      } else {
+        el.setAttribute(type, value)
+      }
     } else {
       el.removeAttribute(this.type)
     }

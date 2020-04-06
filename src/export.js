@@ -1,27 +1,31 @@
 import kick from './kick'
 import View from './view'
-import {OPTIONS, EXTENSIONS} from './constants'
-import adapter from './adapter'
+import {OPTIONS, EXTENSIONS, COMPS} from './constants'
 import binders from './binders'
+import formatters from './formatters'
+import adapter from './adapter'
 import Observer from './observer'
 //import router from './router'
-//import components from './components'
+import Component from './component'
 
 // Returns the public interface.
 kick.binders = binders
-//kick.components = components
+kick.formatters = formatters
 kick.adapters['.'] = adapter
+kick.Component = Component
 //kick.router = router
 
 // Binds some data to a template / element. Returns a kick.View instance.
-kick.bind = (elm, models, options) => {
+kick.bind = (elm, models, options, ) => {
   // if element then return itself
   elm = elm || '[kick-app]';
   let el = (elm.nodeType && elm.nodeType > 0) ? elm : document.querySelector(elm);
-  // max 2 tries to add newly added elements, can't do recursive as included file might have multiple ements and outerHTML doesn't support this 
   kick.includeFile(el);
-  //kick.includeFile(el);
 
+  // refresh the el again after loading files
+  el = (elm.nodeType && elm.nodeType > 0) ? elm : document.querySelector(elm);
+
+  
   let viewOptions = {}
   models = models || {}
   options = options || {}
@@ -41,6 +45,16 @@ kick.bind = (elm, models, options) => {
       }
     })
   })
+
+  if(viewOptions[COMPS]){
+    Object.keys(viewOptions[COMPS]).forEach(key => {
+      let comp = viewOptions[COMPS][key]
+      //kick.components[comp.tag] = comp;
+      if(!customElements.get(comp.tag)){
+        customElements.define(comp.tag, comp)
+      }
+    })
+  }
 
   OPTIONS.forEach(option => {
     let value = options[option]
@@ -120,7 +134,7 @@ kick.loadFile = (el, file) => {
         else {el.innerHTML = '<!-- ' + this.responseText + ' -->';}
       }
     } 
-    xhttp.open("GET", file, true);
+    xhttp.open("GET", file, false);
     xhttp.send();
   } catch (e) {
     el.innerHTML = '<!-- Unable to connect to server -->';
@@ -130,8 +144,16 @@ kick.loadFile = (el, file) => {
 // Sets the element's HTML content from file.
 kick.includeFile = (el) => {
   let z, i, elmnt, file;
-  /* Loop through a collection of all HTML elements: */
-  z = el.getElementsByTagName("*");
+  if(!el.getElementsByTagName){
+    if(el.children.length){
+      z = el.children;
+    } else {
+      return;
+    }
+  } else{
+    /* Loop through a collection of all HTML elements: */
+    z =  el.getElementsByTagName("*");
+  } 
 
   for (i = 0; i < z.length; i++) {
     elmnt = z[i];

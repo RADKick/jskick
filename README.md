@@ -52,8 +52,40 @@ import kick from '@radkick/kick'
 ```
 
 ```javascript
+var auction = {currenBid: 250, timeLeft: 100, product: {name: 'iPhone'} };
 kick.bind($('#auction'), {auction: auction})
 ```
+Quick Reference for bindings
+^ or ^click (<a ^="userClicked()">Link</a>)
+^^ or ^dblclick (<a ^^="userDblClicked()">Link</a>)
+^_ or ^contextmenu (<a ^="userRightClicked()">Link</a>)
+^otherevent (<a ^mouseover="($event)">Link</a>)
+^@ or ^change (<input ^="userChanged()" type="text" @="model.property"></input>)
+^+ or ^focus (<input ^+="userFocused()" type="text" @="model.property"></input>)
+^- or ^blur (<input ^-="userBlurred()" type="text" @="model.property"></input>)
+@ or @value (<input type="text" @="model.property"></input>)
+@x or @checked (<input type="checkbox" @x="model.isChecked"></input>)
+@-x or @unchecked (<input type="checkbox" @-x="model.isUnchecked"></input>)
+: or :text (<div :="model.textProperty"></div>)
+:: or :html (<div ::="model.htmlProperty"></div>)
+$ or :html (<div $="model.htmlProperty"></div>)
++ or :show (<div +="model.isVisible"></div>)
+- or :hide (<div -="model.isHidden"></div>)
+~ or :disabled (<input type="text" ~="model.isDisabled"></input>)
+~~ or :enabled (<input type="text" ~~="model.isEnabled"></input>)
+-~ or :enabled (<input type="text" -~="model.isEnabled"></input>)
+
+? (<div ?="model.ifTrue">Hello World!</div>)
+-? (<div -?="model.ifFalse">Hello World!</div>)
+
+. (<div .bg-primary="model.hasBG">Hello World!</div>)
+-. (<div -.bg-primary="model.noBG">Hello World!</div>)
+
+.. (<div ..font-size="model.fontSize">Added font size style</div>)
+-.. (<div -..font-size="model.font-Size">Removed Font size style</div>)
+
+
+? is used for if
 
 ## Getting Started and Documentation
 

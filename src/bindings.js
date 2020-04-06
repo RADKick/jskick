@@ -78,10 +78,16 @@ export class Binding {
     }
   }
 
-  parseFormatterArguments(args, formatterIndex) {
+  parseFormatterArguments(args, formatterIndex, ev, vm) {
     return args.map(parseType).map(({ type, value }, ai) => {
       if (type === 0) {
         return value;
+      } else if (value === '$ev') { //return event here
+          return ev;
+      } else if (value === '$vm') { //return model here
+          return vm;
+      } else if (value === '$el') { //return element here
+          return this.el;
       } else {
         if (!this.formatterObservers[formatterIndex]) {
           this.formatterObservers[formatterIndex] = {};
@@ -120,12 +126,21 @@ export class Binding {
 
   // Returns an event handler for the binding around the supplied function.
   eventHandler(fn) {
-    let binding = this;
+    let binding = this;    
     let handler = binding.view.options.handler;
+    let lfn = fn;
 
-    return function(ev) {
-      handler.call(fn, this, ev, binding);
-    };
+    let type = this.type;
+    let el = this.el; 
+    if(type.substr(0,1) === '^'){ type = type.substr(1); }
+    if(el.constructor && el.constructor.properties && el.constructor.properties[type] !== undefined){
+      let mapType = el.constructor.properties[type]; 
+      el[mapType] = lfn;
+    } else {      
+      return function(ev) {
+        lfn && handler.call(lfn, this, ev, binding);
+      };
+    }
   }
 
   // Sets the value for the binding. This Basically just runs the binding routine

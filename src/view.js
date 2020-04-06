@@ -81,7 +81,7 @@ export default class View {
     let keypath = pipes.shift()
 
     if(arg === '' && type === '*'){
-      //resolve for in expression, useful for case sensitive members e.g. myItem in items
+      // resolve for in expression, useful for case sensitive members e.g. myItem in items
       const forRE = new RegExp(/^(.+)\s+in\s+(.[^|\s]+)(.*)$/gm);
       let forExp = forRE.exec(keypath);
       // console.log(forExp)

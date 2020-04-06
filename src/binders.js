@@ -151,12 +151,35 @@ const binders = {
   },
 
   // Order of ..& should be before .& otherwise match will trigger shorter length first
+  '-..&': function(el, value) {
+    const propertyName = this.arg;
+    if (!value) {
+      el.style[propertyName] = value;
+    } else {
+      el.style[propertyName] = '';
+    }
+  },
+
+  // Order of ..& should be before .& otherwise match will trigger shorter length first
   '..&': function(el, value) {
     const propertyName = this.arg;
     if (value) {
       el.style[propertyName] = value;
     } else {
       el.style[propertyName] = '';
+    }
+  },
+
+  // Adds or removes the class from the element when value is false or true.
+  '-.&': function(el, value) {
+    let elClass = ` ${el.className} `
+
+    if (!value === (elClass.indexOf(` ${this.arg} `) > -1)) {
+      if (!value) {
+        el.className = `${el.className} ${this.arg}`
+      } else {
+        el.className = elClass.replace(` ${this.arg} `, ' ').trim()
+      }
     }
   },
 
@@ -228,6 +251,34 @@ const binders = {
         el.checked = getString(el.value) === getString(value)
       } else {
         el.checked = !!value
+      }
+    }
+  },
+  // Unchecks a checkbox or radio input when the value is true. Also sets the model
+  // property when the input is checked or unchecked (two-way binder).
+  '@unchecked': {
+    publishes: true,
+    priority: 2000,
+
+    bind: function(el) {
+      var self = this;
+      if (!this.callback) {
+        this.callback = function () {
+          self.publish();
+        }
+      }
+      el.addEventListener('change', this.callback)
+    },
+
+    unbind: function(el) {
+      el.removeEventListener('change', this.callback)
+    },
+
+    routine: function(el, value) {
+      if (el.type === 'radio') {
+        el.checked = !(getString(el.value) === getString(value))
+      } else {
+        el.checked = !(!!value)
       }
     }
   },
@@ -327,11 +378,71 @@ const binders = {
       }
     }
   },
-  '::&': function(el, value) {
+
+  // Inserts and binds the element and it's child nodes into the DOM when false.
+  '-?': {
+    block: true,
+    priority: 4001,
+
+    bind: function(el) {
+      if (!this.marker) {
+        this.marker = document.createComment(' kick: ' + this.type + ' ' + this.keypath + ' ');
+        this.attached = false
+
+        el.parentNode.insertBefore(this.marker, el)
+        el.parentNode.removeChild(el)
+      } else if (this.bound === false && this.nested) {
+        this.nested.bind()
+      }
+      this.bound = true
+    },
+
+    unbind: function() {
+      if (this.nested) {
+        this.nested.unbind()
+        this.bound = false
+      }
+    },
+
+    routine: function(el, value) {
+      if (!!value !== this.attached) {
+        if (!value) {
+
+          if (!this.nested) {
+            this.nested = new View(el, this.view.models, this.view.options)
+            this.nested.bind()
+          }
+
+          this.marker.parentNode.insertBefore(el, this.marker.nextSibling)
+          this.attached = true
+        } else {
+          el.parentNode.removeChild(el)
+          this.attached = false
+        }
+      }
+    },
+
+    update: function(models) {
+      if (this.nested) {
+        this.nested.update(models)
+      }
+    }
+  },
+
+
+  ':&': function(el, value) {
     if (value != null) {
       el.setAttribute(this.arg, value)
     } else {
       el.removeAttribute(this.arg)
+    }
+  },
+  '-:&': function(el, value) {
+    if (value != null) {
+      el.removeAttribute(this.arg)
+    } else {
+      // take no action and keep the attribute if it is there
+      // el.setAttribute(this.arg, value)
     }
   }  
 }

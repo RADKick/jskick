@@ -6,9 +6,11 @@ export const OPTIONS = [
   'handler'
 ]
 
+export const COMPS = 'components'
+
 export const EXTENSIONS = [
   'binders',
   'formatters',
-  'components',
+  COMPS,
   'adapters'
 ]
