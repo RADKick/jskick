@@ -3,10 +3,22 @@
 -- TODO: Pending changes to documentation, under works.
 -- 
 
-# 0.9.85
-
+# 0.9.92
 ### Changes
+- Added jQuery support for event binders (^& only) handling
 
+# 0.9.91
+### Changes
+- Modified examples to support passing $ev, $vm, and $el
+- changed readme to reflect new binders
+
+# 0.9.90
+### Changes
+- Modified binders to support $ev, $vm, and $el as event args
+- Overhauling of binders and added new binders like -? not if, -.class, etc.
+
+# 0.9.85
+### Changes
 - Added new includeFile :file attribute 
 - Added new examples for file include
 - Run examples
@@ -14,9 +26,7 @@
 -- run examples using npm (run examples and then visit http://127.0.0.1:8080/examples/ or http://127.0.0.1:8080/examples/inc-example.html
 
 # 0.9.83
-
 ### Changes
-
 - Added new mappers for bindings 
     - ^@ for ^change
     - @+ for ^focus
@@ -24,33 +34,22 @@
 - Added new examples
 - now one can install http-server (npm i http-server -g) and run the examples 
 
-
 # 0.9.82
-
 ### Changes
-
 - Added @x for checked
 - Function parsing to pass on events
 
 
 # 0.9.81
-
 ### Changes
-
 - Has breaking changes, please use caution when you are going to use it on test or prod, good for dev only
-
 - Bindings are drastically renamed for short syntax, hope you like it
-
 - Function calling support is added but not completely tested yet, know few bugs, need to work on them
-
 - More refined and useful components API. Some documentation is available [here](http://rivetsjs.com/docs/guide/#components).
 
 # 0.7
-
 ### Changes
-
 - Support for data-bound keypaths are formatter arguments.
-
     ```
     {{ item.price | lte user.balance }}
     ```

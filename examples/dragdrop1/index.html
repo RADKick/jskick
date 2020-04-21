@@ -1,0 +1,28 @@
+<html>
+
+<head>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+
+<body>
+    <div>
+        <div kick-app>
+
+            <h2>Drag and Drop</h2>
+            <p>Drag the image back and forth between the two div elements.</p>
+
+            <div id="div1" ^drop="drop($ev)" ^dragover="allowDrop($ev)">
+                <img src="http://www.radkick.com/img/radkick_logo_sm.png" draggable="true" ^dragstart="drag($ev)" id="drag1"
+                    width="88" height="31">
+            </div>
+
+            <div id="div2" ^drop="drop($ev)" ^dragover="allowDrop($ev)"></div>
+
+        </div>
+    </div>
+</body>
+<script src="https://code.jquery.com/jquery-2.2.4.js"></script>
+<script src="/dist/kick.js"></script>
+<script src="index.js"></script>
+
+</html>

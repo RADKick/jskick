@@ -75,8 +75,8 @@ const kick = {
 
   // Default event handler.
   handler: function(context, ev, binding) {
-    //changing the order of returns as well as passed arguments first then $event
-    //todo document this breakig change
+    // changing the order of returns as well as passed arguments first then $event
+    // todo document this breakig change
     const processedArgs = binding.parseFormatterArguments(binding.fnArgs, 0, ev, binding.view.models);
     let fns = this.name.split(' ')
     let fn = fns[fns.length - 1]
@@ -93,7 +93,7 @@ const kick = {
   // back to using this binder.
   fallbackBinder: function(el, value) {
     if (value != null) {
-      // is this a component
+      // is this a component?
       let type = this.type;
       let comp = customElements.get(el.localName)
       if(type.substr(0,1) === ':'){ type = type.substr(1); }

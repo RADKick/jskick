@@ -10,7 +10,7 @@ Simple drag drop https://jsfiddle.net/riteshpahwa/ecn1fq6j/
 
 Not so simple drag drop http://jsfiddle.net/riteshpahwa/qym37hbf/119/
 
-ToDo MVC with KickJS, pay attention to the simple syntax https://stackblitz.com/edit/js-r5mnzv
+ToDo MVC with jskick, pay attention to the simple syntax https://stackblitz.com/edit/js-r5mnzv
 
 You can also run examples (in examples folder) by installing npm i http-server
 
@@ -22,74 +22,95 @@ Not ready for prod. Need help with few more things, like expression binding, tes
 ## Install
 
 ```bash
-npm install @radkick/kick
+npm install jskick
 ```
 
 Use in a script tag...
 
 ```html
-<script src="node_modules/@radkick/kick/dist/kick.min.js"></script>
+<script src="node_modules/jskick/dist/kick.min.js"></script>
 ```
 
 ... or import using a bundler like webpack
 
 ```javascript
-import kick from '@radkick/kick'
+import kick from 'jskick'
 ```
 
 
 ## Usage
 
 ```html
-<section id="auction">
-  <h3>{{ auction.product.name }}</h3>
-  <p>Current bid: {{ auction.currentBid | money }}</p>
+		<section id="auction">
+			<h3>{{ product.name }}</h3>
+			<p>Current bid: {{ currentBid | money }}</p>
 
-  <aside ?="auction.timeLeft | lt 120">
-    Hurry up! There is {{ auction.timeLeft | time }} left.
-  </aside>
-</section>
+			<aside ?="timeLeft | lt 120">
+				Hurry up! There is {{ timeLeft | time }} left.
+			</aside>
+
+			<button ^="hi(product.name)" class="btn btn-primary">Say Hi!</button> 
+		</section>
 ```
 
 ```javascript
-var auction = {currenBid: 250, timeLeft: 100, product: {name: 'iPhone'} };
-kick.bind($('#auction'), {auction: auction})
+	var vm = {
+    currentBid: 250.51, 
+    timeLeft: 100, 
+    product: {name: 'iPhone'}, 
+    hi: function(name) {alert('Kick said hi! your product is ' + name); } 
+  };
+
+  kick.formatters.time = function(value){ 
+      return value + ' minutes'; 
+  }
+  kick.formatters.money = {
+    read: function(value) {
+        return '$' + (value / 100).toFixed(2)
+      },
+      publish: function(value) {
+        return Math.round(parseFloat(value) * 100)
+      }
+  }
+
+  kick.bind('#auction', vm);
+
 ```
-Quick Reference for bindings
-^ or ^click (<a ^="userClicked()">Link</a>)
-^^ or ^dblclick (<a ^^="userDblClicked()">Link</a>)
-^_ or ^contextmenu (<a ^="userRightClicked()">Link</a>)
-^otherevent (<a ^mouseover="($event)">Link</a>)
-^@ or ^change (<input ^="userChanged()" type="text" @="model.property"></input>)
-^+ or ^focus (<input ^+="userFocused()" type="text" @="model.property"></input>)
-^- or ^blur (<input ^-="userBlurred()" type="text" @="model.property"></input>)
-@ or @value (<input type="text" @="model.property"></input>)
-@x or @checked (<input type="checkbox" @x="model.isChecked"></input>)
-@-x or @unchecked (<input type="checkbox" @-x="model.isUnchecked"></input>)
-: or :text (<div :="model.textProperty"></div>)
-:: or :html (<div ::="model.htmlProperty"></div>)
-$ or :html (<div $="model.htmlProperty"></div>)
-+ or :show (<div +="model.isVisible"></div>)
-- or :hide (<div -="model.isHidden"></div>)
-~ or :disabled (<input type="text" ~="model.isDisabled"></input>)
-~~ or :enabled (<input type="text" ~~="model.isEnabled"></input>)
--~ or :enabled (<input type="text" -~="model.isEnabled"></input>)
-
-? (<div ?="model.ifTrue">Hello World!</div>)
--? (<div -?="model.ifFalse">Hello World!</div>)
-
-. (<div .bg-primary="model.hasBG">Hello World!</div>)
--. (<div -.bg-primary="model.noBG">Hello World!</div>)
-
-.. (<div ..font-size="model.fontSize">Added font size style</div>)
--.. (<div -..font-size="model.font-Size">Removed Font size style</div>)
+View example at https://stackblitz.com/edit/jskick?file=index.html
 
 
-? is used for if
+### Quick Reference for bindings
+* ^ or ^click (<a ^="userClicked()">Link</a>)
+* ^^ or ^dblclick (<a ^^="userDblClicked()">Link</a>)
+* ^_ or ^contextmenu (<a ^="userRightClicked()">Link</a>)
+* ^otherevent (e.g. <a ^mouseover="($event)">Link</a>)
+* ^@ or ^change (<input ^="userChanged()" type="text" @="model.property"></input>)
+* ^+ or ^focus (<input ^+="userFocused()" type="text" @="model.property"></input>)
+* ^- or ^blur (<input ^-="userBlurred()" type="text" @="model.property"></input>)
+* @ or @value (<input type="text" @="model.property"></input>)
+* @x or @checked (<input type="checkbox" @x="model.isChecked"></input>)
+* @-x or @unchecked (<input type="checkbox" @-x="model.isUnchecked"></input>)
+* : or :text (<div :="model.textProperty"></div>)
+* :: or :html (<div ::="model.htmlProperty"></div>)
+* $ or :html (<div $="model.htmlProperty"></div>)
+* + or :show (<div +="model.isVisible"></div>)
+* - or :hide (<div -="model.isHidden"></div>)
+* ~ or :disabled (<input type="text" ~="model.isDisabled"></input>)
+* -~ or :enabled (<input type="text" -~="model.isEnabled"></input>)
+* ~~ or :enabled (<input type="text" ~~="model.isEnabled"></input>)
+* 
+* ? (<div ?="model.ifTrue">Hello World!</div>)
+* -? (<div -?="model.ifFalse">Hello World!</div>)
+* 
+* . (<div .bg-primary="model.hasBG">Hello World!</div>)
+* -. (<div -.bg-primary="model.noBG">Hello World!</div>)
+* 
+* .. (<div ..font-size="model.fontSize">Added font size style</div>)
+* -.. (<div -..font-size="model.remFontSize">Removed Font size style</div>)
 
 ## Getting Started and Documentation
 
-Documentation will be (is) available on the [homepage](http://radkick.github.io/kickjs/). Learn by reading the [Guide](http://radkick.github.io/kickjs/docs/guide/) and refer to the [Binder Reference](http://radkick.github.io/kickjs/docs/reference/) to see what binders are available to you out-of-the-box.
+Documentation will be (is) available on the [homepage](http://radkick.github.io/jskick/). Learn by reading the [Guide](http://radkick.github.io/jskick/docs/guide/) and refer to the [Binder Reference](http://radkick.github.io/jskick/docs/reference/) to see what binders are available to you out-of-the-box.
 
 ## Differences from Rivets.js / tinybind.js
 

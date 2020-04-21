@@ -1,0 +1,14 @@
+<html kick-app>    
+    <head :file="inc-head.html">        
+    </head>
+    <body class="text-center">        
+        <div class="cover-container d-flex h-100 p-3 mx-auto flex-column">
+            <kicker :file="inc-header.html"></kicker>
+            <kicker :file="inc-body.html"></kicker>        
+            <div :file="inc-missing.html"></div>                
+            <kicker :file="inc-footer.html"></kicker>
+        </div>
+    </body>
+    <script src="../../dist/kick.js"></script>
+    <script>kick.bind('', {});</script>
+</html>

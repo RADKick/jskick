@@ -113,7 +113,7 @@ export class Binding {
       let id = args.shift();
       let formatter = this.view.options.formatters[id];
 
-      const processedArgs = this.parseFormatterArguments(args, index);
+      const processedArgs = this.parseFormatterArguments(args, index, null, this.view.models);
 
       if (formatter && formatter.read instanceof Function) {
         result = formatter.read(result, ...processedArgs);
@@ -148,9 +148,9 @@ export class Binding {
   set(value) {
     if (value instanceof Function && !this.binder.function) {
       //todo update docs, probably a breaking change
-      const processedArgs = this.parseFormatterArguments(this.fnArgs, 0);
+      const processedArgs = this.parseFormatterArguments(this.fnArgs, 0, null, this.view.models);
       value = this.formattedValue(
-        value.call(this.model, ...[...processedArgs, this.view.models])
+        value.call(this.model, ...[...processedArgs])
       );
       //value = this.formattedValue(value.call(this.model))
     } else {
@@ -182,7 +182,7 @@ export class Binding {
         const args = declaration.split(FORMATTER_SPLIT);
         const id = args.shift();
         const formatter = this.view.options.formatters[id];
-        const processedArgs = this.parseFormatterArguments(args, index);
+        const processedArgs = this.parseFormatterArguments(args, index, null, this.view.models);
 
         if (formatter && formatter.publish) {
           result = formatter.publish(result, ...processedArgs);

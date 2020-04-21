@@ -1,0 +1,1 @@
+On command line in root folder of project run http-server

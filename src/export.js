@@ -50,7 +50,7 @@ kick.bind = (elm, models, options, ) => {
     Object.keys(viewOptions[COMPS]).forEach(key => {
       let comp = viewOptions[COMPS][key]
       //kick.components[comp.tag] = comp;
-      if(!customElements.get(comp.tag)){
+      if(comp.tag && !customElements.get(comp.tag)){
         customElements.define(comp.tag, comp)
       }
     })

@@ -1,0 +1,68 @@
+.bold{font-weight: 600}
+.lg{font-size: 26px;}
+.gr{color:#555}
+
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+td, th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+}
+
+tr:nth-child(even) {
+  background-color: #dddddd;
+}
+
+#div1,
+#div2 {
+  float: left;
+  width: 100px;
+  height: 35px;
+  margin: 10px;
+  padding: 10px;
+  border: 1px solid black;
+  background-color: #eee;
+}
+
+
+/* Tree */
+
+.list-group.list-group-tree {
+  padding: 0;
+}
+
+.list-group.list-group-tree .list-group {
+  margin-bottom: 0;
+}
+
+.list-group.list-group-tree > .list-group > .list-group-item {
+  padding-left: 30px;
+}
+.list-group.list-group-tree > .list-group > .list-group > .list-group-item {
+  padding-left: 45px;
+}
+.list-group.list-group-tree > .list-group > .list-group > .list-group-item > .list-group-item {
+  padding-left: 60px;
+}
+.list-group.list-group-tree > .list-group > .list-group > .list-group-item > .list-group-item > .list-group-item {
+  padding-left: 75px;
+}
+.list-group.list-group-tree > .list-group > .list-group > .list-group-item > .list-group-item > .list-group-item > .list-group-item {
+  padding-left: 90px;
+}
+
+.list-group-item .fa {
+  margin-right: 5px;
+}
+
+.fa-chevron:before {
+      content: "\f054"; /*right*/
+}
+.in > .fa-chevron:before {
+      content: "\f078"; /*down*/
+}

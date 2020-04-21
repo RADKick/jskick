@@ -1,0 +1,24 @@
+<html>
+
+<head>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+
+<body>
+    <div>
+        <div kick-app>
+
+            <h2>Component Example #1</h2>
+            <p>Bind message component</p>
+
+            <my-component :message="'Hello'" :link="link" :linktext="linkText"></my-component>
+            
+            <br><br>Outside Component <p :="linkText"></p>
+        </div>
+    </div>
+</body>
+<script src="https://code.jquery.com/jquery-2.2.4.js"></script>
+<script src="../../dist/kick.js"></script>
+<script src="index.js"></script>
+
+</html>

@@ -1,0 +1,46 @@
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="style.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css">
+</head>
+
+<body>
+<div kick-app>
+        <div>
+          Select #1 <input :select1="tasks" type="text" id="select2_test1" /><br> 
+          Select #11 
+          <select :select2="selectOpts" id="select2_test11" @="s11">
+            <option>--Select--</option>
+            <option *opt="tasks" @="opt.name" :="opt.name"></option>
+          </select><br>
+          Selected <span :="s11"></span>
+        </div>
+        
+          <button ^="chg()">
+           Set Fix car
+          </button>
+      
+          <br>
+          <hr>
+        <div>
+        <select :select2="selectOpts2" id="select2_test2" @="s2">
+        </select><br>
+        Selected <span :="s2"></span>
+        </div>
+      
+        <br>
+        <hr>
+      <div>
+      <select :select2="selectOpts3" id="select2_test3" @="s2">
+      </select><br>
+      Selected <span :="s2"></span>
+      </div>
+</div>
+</body>
+<script src="https://code.jquery.com/jquery-2.2.4.js"></script>
+<script src="../../dist/kick.js"></script>
+<Script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></Script>
+<script src="kick.select2.js"></script>      
+<script src="select2.js"></script>      
+
+</html>

@@ -1,0 +1,112 @@
+<html>
+
+<head>
+  <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+
+<body>
+
+<div kick-app>
+    Test conditional binders<br>
+    <input @x="chk" type="checkbox"> If
+    <input @x="show" type="checkbox"> Show
+    <input @x="hide" type="checkbox"> Hide
+    <input @x="disb" type="checkbox"> Disable Input
+    <hr>
+    <div ?="chk">You clicked on if condition checkbox</div>
+    <div -?="chk">When if checkbox is not checked </div>
+    <div ?="chk === true">When if is true with a condition (chk === true) will work oneday with expressions</div>
+    <div +="show">You clicked on show checkbox!!</div>
+    <div -="hide">Click on hide checkbox to hide this text</div>
+    <hr>
+    Enter name (html is allowed): <input @="name" ~="disb" placeholder="Enter name.."><br>
+    <small>Toggles with disable checkbox</small>
+    <input @="name" ~~="disb" :id="name">
+    <br>
+    Text Bind: <span :="name" :title="name"></span><br>
+    <h2>Html: <span ::="name"></span></h2>
+    <small>Html binding (type html in text)</small>
+
+    <hr>
+    Add class (.bold="expr" or remove by -.bold="expr")
+    <input @x="bold" type="checkbox"> Bold
+    <input @x="lg" type="checkbox"> Large
+    <div .bold="bold">Add bold class to text test</div>
+    <div .lg="lg">Add lg class to text test</div>
+    <div -.bold="bold" class="bold">Remove bold class to text test</div>
+
+    <hr>
+    Add style (..float="expr")
+    <input type=text @="float" />
+    <div><span ..float="float">Add float to text by typing left/right in text box</span></div>
+
+    <br>
+    <hr>
+    Select to push a item <select ^@="subvm.selChange(subvm.selVal)" @="subvm.selVal">
+      <option value="1">Option Val = 1</option>
+      <option value="2">Option Val = 2</option>
+      <option value="3">Option Val = 3</option>
+      <option value="4">Option Val = 4</option>
+      <option value="5">Option Val = 5</option>
+    </select> 
+    <div class="btn-group btn-group-toggle" data-toggle="buttons">
+        <label *rs="selVals" class="btn btn-light">
+          <input type="radio" name="options" @="rs" @x="subvm.selVal" autocomplete="off"><span :="rs" />
+        </label>
+    </div>
+    Selected Value: <div :="subvm.selVal"></div>
+ <hr>    
+    <div *myitem="items">
+      <input @="myitem.name">
+      <span ^^="alert(myitem, true)" ^="alert(myitem)" .bold="bold" .lg="lg">Click / Doubleclick here {{$index}} /
+        {{myitem.name}} </span>
+    </div>
+    <h4>Default $item as *="items" rather *item="items"</h4>
+    <table ..width="wid">
+      <tr>
+        <th>Index</th>
+        <th>Name</th>
+        <th>Value</th>
+        <th>Actions</th>
+      </tr>
+      <tr *="items" class="gr">
+        <td ^^="alert($item)">{{$index}}</td>
+        <td .lg="lg"><span +="$item.isEdited"><input @="$item.name"></span><span
+            -="$item.isEdited">{{$item.name}}</span></td>
+        <td :="$item.value"></td>
+        <td><button ^="edit($item)" :="btnEditSave($item, $item.name, $item.isEdited, 'B', 10)">Edit</button> <button ^="del($item)">Del</button></td>
+      </tr>
+    </table>
+    <h5>Case sensitive test myItem with *="myItem in items"</h5>
+    <table ..width="'100%'">
+      <tr>
+        <th>Index</th>
+        <th>Name</th>
+        <th>Value</th>
+        <th>Actions</th>
+      </tr>
+      <tr *="myItem in items" .bold="bold" class="gr">
+        <td ^^="alert(myItem)">{{$index}}</td>
+        <td .lg="lg"><span +="myItem.isEdited"><input @="myItem.name"></span><span
+            -="myItem.isEdited">{{myItem.name}}</span></td>
+        <td :="myItem.value"></td>
+        <!-- <td><button ^="edit" :="myItem.isEdited | call btnEditSave myItem"></button> <button ^="del">Del</button></td> -->
+        <td><button ^="edit(myItem, $ev)" :="btnEditSave(myItem, myItem.name, myItem.isEdited, 'B', 10)"></button> <button
+            ^="del(myItem, $ev)">Del</button></td>
+      </tr>
+    </table>
+    <hr>
+    Selected Value: <div :="vm.selVal"></div>
+    <!-- <p ..="modelColor.value | toColorStyle">{modelCounter.value}</p> -->
+    <div>
+      <!-- THE COMPONENT NEEDS TO BE INSIDE A SEPARATE ELEMENT OR ELSE
+             THE P TAG BELOW GETS REMOVED -->
+      <app-counter counter-attr="modelCounter" color-attr="modelColor" />
+    </div>
+  </div>
+
+  <script src="/dist/kick.js"></script>
+  <script src="index.js"></script>
+</body>
+
+</html>

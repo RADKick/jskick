@@ -1,18 +1,15 @@
-var OPTIONS = [
-//'prefix',
+var OPTIONS = [//'prefix',
 'templateDelimiters', 'rootInterface', 'preloadData', 'handler'];
-
-var EXTENSIONS = ['binders', 'formatters', 'components', 'adapters'];
+var COMPS = 'components';
+var EXTENSIONS = ['binders', 'formatters', COMPS, 'adapters'];
 
 var PRIMITIVE = 0;
 var KEYPATH = 1;
 var TEXT = 0;
 var BINDING = 1;
-
 var QUOTED_STR = /^'.*'$|^".*"$/;
-var WHITESPACES = ' \n\r\t'.split('');
+var WHITESPACES = ' \n\r\t'.split(''); // Parser and tokenizer for getting the type and value from a string.
 
-// Parser and tokenizer for getting the type and value from a string.
 function parseType(string) {
   var type = PRIMITIVE;
   var value = string;
@@ -33,12 +30,14 @@ function parseType(string) {
     type = KEYPATH;
   }
 
-  return { type: type, value: value };
-}
-
-// Template parser and tokenizer for mustache-style text content bindings.
+  return {
+    type: type,
+    value: value
+  };
+} // Template parser and tokenizer for mustache-style text content bindings.
 // Parses the template and returns a set of tokens, separating static portions
 // of text from binding declarations.
+
 function parseTemplate(template, delimiters) {
   var tokens;
   var length = template.length;
@@ -61,6 +60,7 @@ function parseTemplate(template, delimiters) {
       break;
     } else {
       tokens || (tokens = []);
+
       if (index > 0 && lastIndex < index) {
         tokens.push({
           type: TEXT,
@@ -88,61 +88,79 @@ function parseTemplate(template, delimiters) {
       }
 
       var value = template.slice(lastIndex, index).trim();
-
       tokens.push({
         type: BINDING,
         value: value
       });
-
       lastIndex = index + close.length;
     }
   }
 
   return tokens;
 }
-
 function parseFnExpr(expr) {
   function jsNested(statement) {
     var regex = new RegExp("([a-zA-Z0-9_$]+)\\((.*)\\)", "g");
-    var root = { _: [] };
+    var root = {
+      _: []
+    };
 
     if (QUOTED_STR.test(statement)) {
-      root._.push({ k: statement, t: "l" });
+      root._.push({
+        k: statement,
+        t: "l"
+      });
+
       return root;
     }
 
     var r = regex.exec(statement);
+
     if (!r || r.length < 3) {
       return root;
     }
+
     var parameters = args(r[2]);
-    var node = { _: [] };
+    var node = {
+      _: []
+    };
     parameters.forEach(function (p) {
       if (p.e) {
         if (p.e.indexOf("(") == -1) {
-          node._.push({ k: p.e, t: "p" });
+          node._.push({
+            k: p.e,
+            t: "p"
+          });
         } else {
           var wrappedNode = jsNested(p.e),
               k;
+
           for (k in wrappedNode) {
             node._.push(wrappedNode[k][0]);
           }
         }
       }
-    });
+    }); // Assign node to the node's identifier
 
-    // Assign node to the node's identifier
-    root._.push({ k: r[1], t: 'f', _: node._ });
-    //root._.push(r[1]:node);
+    root._.push({
+      k: r[1],
+      t: 'f',
+      _: node._
+    }); //root._.push(r[1]:node);
+
+
     return root;
   }
 
   function args(statement) {
     statement += ","; // so I don't have to handle the "last, leftover parameter"
+
     var results = [];
     var chars = statement.split("");
     var level = 0; // levels of parenthesis, used to track how deep I am in ().
+
     var index = 0; // determines which parameter am I currently on.
+
     var temp = "",
         match = '',
         temp2 = '';
@@ -152,65 +170,72 @@ function parseFnExpr(expr) {
         case char === '"':
           if (match.length && match === char) {
             temp += match + temp2 + match;
-            results[index] = { s: temp2 };
-            match = temp2 = '';
-            //level--;
+            results[index] = {
+              s: temp2
+            };
+            match = temp2 = ''; //level--;
             //temp = '';
+
             index++;
           } else {
-            match = char;
-            //level++;
-          }
-          //level++;
+            match = char; //level++;
+          } //level++;
+
+
           break;
+
         case !match.length && WHITESPACES.indexOf(char) !== -1:
           break;
+
         case !match.length && char === '(':
           temp += char;
           level++;
           break;
+
         case !match.length && char === ')':
           temp += char;
           level--;
           break;
+
         case !match.length && char === ',':
           // if the comma is between a set of parenthesis, ignore.
           if (level !== 0) {
             temp += char;
-          }
-          // if the comma is external, split the string.
+          } // if the comma is external, split the string.
           else {
-              results[index] = { e: temp };
+              results[index] = {
+                e: temp
+              };
               temp = '';
               index++;
             }
+
           break;
+
         default:
           if (match.length) {
             temp2 += char;
           } else {
             temp += char;
           }
+
           break;
       }
     });
     return results;
-  }
+  } //return if we were able to parse functions otherwise it will be null
 
-  //return if we were able to parse functions otherwise it will be null
+
   return jsNested(expr)._[0] || null;
-}
+} // Someone bored at http://jsfiddle.net/ryanwheale/e8aaa8ny/3/
 
 var kick = {
   // Global binders.
   binders: {},
-
   // Global formatters.
   formatters: {},
-
   // Global components.
   components: {},
-
   // Global sightglass adapters.
   adapters: {},
 
@@ -225,17 +250,12 @@ var kick = {
     this._prefix = value
     this._fullPrefix = value + '-'
   }, */
-
   parseTemplate: parseTemplate,
-
   parseType: parseType,
-
   // Default template delimiters.
   templateDelimiters: ['{{', '}}'],
-
   // Binder shortcuts - extend it if you want to have your own
   // else if(nodeName === '?') {nodeName = 'if';}
-
   binderMap: {
     '^': '^click',
     '^^': '^dblclick',
@@ -245,48 +265,70 @@ var kick = {
     '^-': '^blur',
     '@': '@value',
     '@x': '@checked',
+    '@-x': '@unchecked',
     ':': ':text',
     '::': ':html',
     '$': ':html',
     '+': ':show',
     '-': ':hide',
     '~': ':disabled',
-    '~~': ':enabled'
+    '~~': ':enabled',
+    '-~': ':enabled'
   },
-  // was starBinder in rivetsjs, in kickjs *(star) is used for binding so changing it to varBinder as an variable binder
+  // was starBinder in rivetsjs, in kickjs *(star) is used for foreach binding so changing it to varBinder as an variable binder
   varBinderMap: {
     '.&': ':class-&',
+    '-.&': '-:class-&',
     '..&': ':style-&',
-    '::&': ':attr-&'
+    '-..&': '-:style-&',
+    ':&': ':attr-&',
+    '-:&': '-:attr-&'
   },
   // Default sightglass root interface.
   rootInterface: '.',
-
   // Preload data by default.
   preloadData: true,
-
   // Default event handler.
   handler: function handler(context, ev, binding) {
-    //changing the order of returns as well as passed arguments first then $event
-    //todo document this breakig change
-    var processedArgs = binding.parseFormatterArguments(binding.fnArgs, 0);
-    this.call.apply(this, [context].concat([].concat(processedArgs, [binding.view.models, ev])));
-  },
+    // changing the order of returns as well as passed arguments first then $event
+    // todo document this breakig change
+    var processedArgs = binding.parseFormatterArguments(binding.fnArgs, 0, ev, binding.view.models);
+    var fns = this.name.split(' ');
+    var fn = fns[fns.length - 1];
 
+    if (!fn || fn === '') {
+      //, binding.view.models, ev
+      this.call.apply(this, [context].concat([].concat(processedArgs)));
+    } else {
+      var _ctx$fn;
+
+      var ctx = binding.model;
+
+      (_ctx$fn = ctx[fn]).call.apply(_ctx$fn, [ctx].concat([].concat(processedArgs)));
+    }
+  },
   // Sets the attribute on the element. If no binder above is matched it will fall
   // back to using this binder.
   fallbackBinder: function fallbackBinder(el, value) {
     if (value != null) {
+      // is this a component?
       var type = this.type;
+      var comp = customElements.get(el.localName);
+
       if (type.substr(0, 1) === ':') {
         type = type.substr(1);
       }
-      el.setAttribute(type, value);
+
+      if (comp && comp.properties && comp.properties[type] !== undefined) {
+        var mapType = comp.properties[type];
+        el[mapType] = value;
+      } else {
+        el.setAttribute(type, value);
+      }
     } else {
       el.removeAttribute(this.type);
     }
   },
-
   // Merges an object literal into the corresponding global options.
   configure: function configure(options) {
     var _this = this;
@@ -294,6 +336,7 @@ var kick = {
     if (!options) {
       return;
     }
+
     Object.keys(options).forEach(function (option) {
       var value = options[option];
 
@@ -306,25 +349,23 @@ var kick = {
       }
     });
   },
-
   router: {}
 };
 
 // Check if a value is an object than can be observed.
 function isObject(obj) {
   return typeof obj === 'object' && obj !== null;
-}
+} // Error thrower.
 
-// Error thrower.
+
 function error(message) {
   throw new Error('[Observer] ' + message);
 }
 
 var adapters;
 var interfaces;
-var rootInterface;
+var rootInterface; // Constructs a new keypath observer and kicks things off.
 
-// Constructs a new keypath observer and kicks things off.
 function Observer(obj, keypath, callback) {
   this.keypath = keypath;
   this.callback = callback;
@@ -341,13 +382,16 @@ Observer.updateOptions = function (options) {
   adapters = options.adapters;
   interfaces = Object.keys(adapters);
   rootInterface = options.rootInterface;
-};
-
-// Tokenizes the provided keypath string into interface + path tokens for the
+}; // Tokenizes the provided keypath string into interface + path tokens for the
 // observer to work with.
+
+
 Observer.tokenize = function (keypath, root) {
   var tokens = [];
-  var current = { i: root, path: '' };
+  var current = {
+    i: root,
+    path: ''
+  };
   var index, chr;
 
   for (index = 0; index < keypath.length; index++) {
@@ -355,7 +399,10 @@ Observer.tokenize = function (keypath, root) {
 
     if (!!~interfaces.indexOf(chr)) {
       tokens.push(current);
-      current = { i: chr, path: '' };
+      current = {
+        i: chr,
+        path: ''
+      };
     } else {
       current.path += chr;
     }
@@ -363,10 +410,10 @@ Observer.tokenize = function (keypath, root) {
 
   tokens.push(current);
   return tokens;
-};
-
-// Parses the keypath using the interfaces defined on the view. Sets variables
+}; // Parses the keypath using the interfaces defined on the view. Sets variables
 // for the tokenized keypath as well as the end key.
+
+
 Observer.prototype.parse = function () {
   var path, root;
 
@@ -384,10 +431,10 @@ Observer.prototype.parse = function () {
 
   this.tokens = Observer.tokenize(path, root);
   this.key = this.tokens.pop();
-};
-
-// Realizes the full keypath, attaching observers for every key and correcting
+}; // Realizes the full keypath, attaching observers for every key and correcting
 // old observers to any changed objects in the keypath.
+
+
 Observer.prototype.realize = function () {
   var current = this.obj;
   var unreached = -1;
@@ -396,6 +443,7 @@ Observer.prototype.realize = function () {
 
   for (var index = 0; index < this.tokens.length; index++) {
     token = this.tokens[index];
+
     if (isObject(current)) {
       if (typeof this.objectPath[index] !== 'undefined') {
         if (current !== (prev = this.objectPath[index])) {
@@ -425,9 +473,9 @@ Observer.prototype.realize = function () {
   }
 
   return current;
-};
+}; // Updates the keypath. This is called when any intermediary key is changed.
 
-// Updates the keypath. This is called when any intermediary key is changed.
+
 Observer.prototype.sync = function () {
   var next, oldValue, newValue;
 
@@ -447,42 +495,43 @@ Observer.prototype.sync = function () {
   } else if (next instanceof Array) {
     this.callback.sync();
   }
-};
-
-// Reads the current end value of the observed keypath. Returns undefined if
+}; // Reads the current end value of the observed keypath. Returns undefined if
 // the full keypath is unreachable.
+
+
 Observer.prototype.value = function () {
   if (isObject(this.target)) {
     return this.get(this.key, this.target);
   }
-};
-
-// Sets the current end value of the observed keypath. Calling setValue when
+}; // Sets the current end value of the observed keypath. Calling setValue when
 // the full keypath is unreachable is a no-op.
+
+
 Observer.prototype.setValue = function (value) {
   if (isObject(this.target)) {
     adapters[this.key.i].set(this.target, this.key.path, value);
   }
-};
+}; // Gets the provided key on an object.
 
-// Gets the provided key on an object.
+
 Observer.prototype.get = function (key, obj) {
   return adapters[key.i].get(obj, key.path);
-};
+}; // Observes or unobserves a callback on the object using the provided key.
 
-// Observes or unobserves a callback on the object using the provided key.
+
 Observer.prototype.set = function (active, key, obj, callback) {
   var action = active ? 'observe' : 'unobserve';
   adapters[key.i][action](obj, key.path, callback);
-};
+}; // Unobserves the entire keypath.
 
-// Unobserves the entire keypath.
+
 Observer.prototype.unobserve = function () {
   var obj;
   var token;
 
   for (var index = 0; index < this.tokens.length; index++) {
     token = this.tokens[index];
+
     if (obj = this.objectPath[index]) {
       this.set(false, token, obj, this);
     }
@@ -491,11 +540,13 @@ Observer.prototype.unobserve = function () {
   if (isObject(this.target)) {
     this.set(false, this.key, this.target, this.callback);
   }
-};
-// traverse the scope chain to find the scope which has the root property
+}; // traverse the scope chain to find the scope which has the root property
 // if the property is not found in chain, returns the root scope
+
+
 Observer.prototype.getRootObject = function (obj) {
   var rootProp, current;
+
   if (!obj.$parent) {
     return obj;
   }
@@ -507,6 +558,7 @@ Observer.prototype.getRootObject = function (obj) {
   }
 
   current = obj;
+
   while (current.$parent && current[rootProp] === undefined) {
     current = current.$parent;
   }
@@ -514,14 +566,9 @@ Observer.prototype.getRootObject = function (obj) {
   return current;
 };
 
-var classCallCheck = function (instance, Constructor) {
-  if (!(instance instanceof Constructor)) {
-    throw new TypeError("Cannot call a class as a function");
-  }
-};
-
 function getInputValue(el) {
   var results = [];
+
   if (el.type === "checkbox") {
     return el.checked;
   } else if (el.type === "select-multiple") {
@@ -530,7 +577,6 @@ function getInputValue(el) {
         results.push(option.value);
       }
     });
-
     return results;
   } else {
     return el.value;
@@ -539,16 +585,15 @@ function getInputValue(el) {
 
 var FORMATTER_ARGS = /[^\s']+|'([^']|'[^\s])*'|"([^"]|"[^\s])*"/g;
 var FORMATTER_SPLIT = /\s+/;
-var FN_CHECK = /\(.*\)/;
+var FN_CHECK = /\(.*\)/; // A single binding between a model attribute and a DOM element.
 
-// A single binding between a model attribute and a DOM element.
-var Binding = function () {
+var Binding =
+/*#__PURE__*/
+function () {
   // All information about the binding is passed into the constructor; the
   // containing view, the DOM node, the type of binding, the model object and the
   // keypath at which to listen for changes.
   function Binding(view, el, type, keypath, binder, arg, formatters) {
-    classCallCheck(this, Binding);
-
     this.view = view;
     this.el = el;
     this.type = type;
@@ -557,26 +602,25 @@ var Binding = function () {
     this.arg = arg;
     this.formatters = formatters;
     this.formatterObservers = {};
-    this.model = undefined;
+    this.model = undefined; //new property in kick for fn args but not sure if this is the right way
 
-    //new property in kick for fn args but not sure if this is the right way
-    this.fnArgs = [];
-    //new property in kick for subscribers to get notified if value is changing specifically for jquery plugins
-    this.subscribers = [];
-    //new property in kick for locking to avoid loops of updates, specifically for jquery plugins
-    this.locked = false;
-    // add object to hold listners so that they can be unbinded later
+    this.fnArgs = []; //new property in kick for subscribers to get notified if value is changing specifically for jquery plugins
+
+    this.subscribers = []; //new property in kick for locking to avoid loops of updates, specifically for jquery plugins
+
+    this.locked = false; // add object to hold listners so that they can be unbinded later
+
     this.listeners = {};
-  }
-
-  // Observes the object keypath
+  } // Observes the object keypath
 
 
-  Binding.prototype.observe = function observe(obj, keypath) {
+  var _proto = Binding.prototype;
+
+  _proto.observe = function observe(obj, keypath) {
     return new Observer(obj, keypath, this);
   };
 
-  Binding.prototype.parseTarget = function parseTarget() {
+  _proto.parseTarget = function parseTarget() {
     if (this.keypath) {
       var token = parseType(this.keypath);
 
@@ -585,15 +629,16 @@ var Binding = function () {
       } else {
         if (FN_CHECK.test(this.keypath)) {
           var fnExpr = parseFnExpr(this.keypath);
+
           if (fnExpr) {
             this.keypath = fnExpr.k;
             this.fnArgs = fnExpr._.map(function (x) {
               return x.k;
-            });
-            //let fnArgs = fnExpr._.map(x => x.k)
+            }); //let fnArgs = fnExpr._.map(x => x.k)
             //this.fnArgs = this.parseFormatterArguments(fnArgs, 0)
           }
         }
+
         this.observer = this.observe(this.view.models, this.keypath);
         this.model = this.observer.target;
       }
@@ -602,7 +647,7 @@ var Binding = function () {
     }
   };
 
-  Binding.prototype.parseFormatterArguments = function parseFormatterArguments(args, formatterIndex) {
+  _proto.parseFormatterArguments = function parseFormatterArguments(args, formatterIndex, ev, vm) {
     var _this = this;
 
     return args.map(parseType).map(function (_ref, ai) {
@@ -611,6 +656,15 @@ var Binding = function () {
 
       if (type === 0) {
         return value;
+      } else if (value === '$ev') {
+        //return event here
+        return ev;
+      } else if (value === '$vm') {
+        //return model here
+        return vm;
+      } else if (value === '$el') {
+        //return element here
+        return _this.el;
       } else {
         if (!_this.formatterObservers[formatterIndex]) {
           _this.formatterObservers[formatterIndex] = {};
@@ -626,13 +680,11 @@ var Binding = function () {
         return observer.value();
       }
     });
-  };
-
-  // Applies all the current formatters to the supplied value and returns the
+  } // Applies all the current formatters to the supplied value and returns the
   // formatted value.
+  ;
 
-
-  Binding.prototype.formattedValue = function formattedValue(value) {
+  _proto.formattedValue = function formattedValue(value) {
     var _this2 = this;
 
     return this.formatters.reduce(function (result, declaration, index) {
@@ -640,41 +692,49 @@ var Binding = function () {
       var id = args.shift();
       var formatter = _this2.view.options.formatters[id];
 
-      var processedArgs = _this2.parseFormatterArguments(args, index);
+      var processedArgs = _this2.parseFormatterArguments(args, index, null, _this2.view.models);
 
       if (formatter && formatter.read instanceof Function) {
         result = formatter.read.apply(formatter, [result].concat(processedArgs));
       } else if (formatter instanceof Function) {
-        result = formatter.apply(undefined, [result].concat(processedArgs));
+        result = formatter.apply(void 0, [result].concat(processedArgs));
       }
+
       return result;
     }, value);
-  };
+  } // Returns an event handler for the binding around the supplied function.
+  ;
 
-  // Returns an event handler for the binding around the supplied function.
-
-
-  Binding.prototype.eventHandler = function eventHandler(fn) {
+  _proto.eventHandler = function eventHandler(fn) {
     var binding = this;
     var handler = binding.view.options.handler;
+    var lfn = fn;
+    var type = this.type;
+    var el = this.el;
 
-    return function (ev) {
-      handler.call(fn, this, ev, binding);
-    };
-  };
+    if (type.substr(0, 1) === '^') {
+      type = type.substr(1);
+    }
 
-  // Sets the value for the binding. This Basically just runs the binding routine
+    if (el.constructor && el.constructor.properties && el.constructor.properties[type] !== undefined) {
+      var mapType = el.constructor.properties[type];
+      el[mapType] = lfn;
+    } else {
+      return function (ev) {
+        lfn && handler.call(lfn, this, ev, binding);
+      };
+    }
+  } // Sets the value for the binding. This Basically just runs the binding routine
   // with the supplied value formatted.
+  ;
 
-
-  Binding.prototype.set = function set$$1(value) {
+  _proto.set = function set(value) {
     if (value instanceof Function && !this.binder.function) {
       var _value;
 
       //todo update docs, probably a breaking change
-      var processedArgs = this.parseFormatterArguments(this.fnArgs, 0);
-      value = this.formattedValue((_value = value).call.apply(_value, [this.model].concat([].concat(processedArgs, [this.view.models]))));
-      //value = this.formattedValue(value.call(this.model))
+      var processedArgs = this.parseFormatterArguments(this.fnArgs, 0, null, this.view.models);
+      value = this.formattedValue((_value = value).call.apply(_value, [this.model].concat([].concat(processedArgs)))); //value = this.formattedValue(value.call(this.model))
     } else {
       value = this.formattedValue(value);
     }
@@ -685,24 +745,20 @@ var Binding = function () {
       routineFn.call(this, this.el, value);
       this.callSubscribers(value);
     }
-  };
+  } // Syncs up the view binding with the model.
+  ;
 
-  // Syncs up the view binding with the model.
-
-
-  Binding.prototype.sync = function sync() {
+  _proto.sync = function sync() {
     if (this.observer) {
       this.model = this.observer.target;
       this.set(this.observer.value());
     } else {
       this.set(this.value);
     }
-  };
+  } // Publishes the value currently set on the input element back to the model.
+  ;
 
-  // Publishes the value currently set on the input element back to the model.
-
-
-  Binding.prototype.publish = function publish() {
+  _proto.publish = function publish() {
     var _this3 = this;
 
     if (this.observer) {
@@ -710,24 +766,23 @@ var Binding = function () {
         var args = declaration.split(FORMATTER_SPLIT);
         var id = args.shift();
         var formatter = _this3.view.options.formatters[id];
-        var processedArgs = _this3.parseFormatterArguments(args, index);
+
+        var processedArgs = _this3.parseFormatterArguments(args, index, null, _this3.view.models);
 
         if (formatter && formatter.publish) {
           result = formatter.publish.apply(formatter, [result].concat(processedArgs));
         }
+
         return result;
       }, this.getValue(this.el));
-
       this.observer.setValue(value);
     }
-  };
-
-  // Subscribes to the model for changes at the specified keypath. Bi-directional
+  } // Subscribes to the model for changes at the specified keypath. Bi-directional
   // routines will also listen for changes on the element to propagate them back
   // to the model.
+  ;
 
-
-  Binding.prototype.bind = function bind() {
+  _proto.bind = function bind() {
     this.parseTarget();
 
     if (this.binder.hasOwnProperty("bind")) {
@@ -737,12 +792,10 @@ var Binding = function () {
     if (this.view.options.preloadData) {
       this.sync();
     }
-  };
+  } // Unsubscribes from the model and the element.
+  ;
 
-  // Unsubscribes from the model and the element.
-
-
-  Binding.prototype.unbind = function unbind() {
+  _proto.unbind = function unbind() {
     var _this4 = this;
 
     if (this.binder.unbind) {
@@ -755,21 +808,19 @@ var Binding = function () {
 
     Object.keys(this.formatterObservers).forEach(function (fi) {
       var args = _this4.formatterObservers[fi];
-
       Object.keys(args).forEach(function (ai) {
         args[ai].unobserve();
       });
     });
-
     this.formatterObservers = {};
-  };
-
-  // Updates the binding's model from what is currently set on the view. Unbinds
+  } // Updates the binding's model from what is currently set on the view. Unbinds
   // the old model first and then re-binds with the new model.
+  ;
 
-
-  Binding.prototype.update = function update() {
-    var models = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+  _proto.update = function update(models) {
+    if (models === void 0) {
+      models = {};
+    }
 
     if (this.observer) {
       this.model = this.observer.target;
@@ -778,47 +829,38 @@ var Binding = function () {
     if (this.binder.update) {
       this.binder.update.call(this, models);
     }
-  };
+  } // Returns elements value
+  ;
 
-  // Returns elements value
-
-
-  Binding.prototype.getValue = function getValue(el) {
+  _proto.getValue = function getValue(el) {
     if (this.binder && this.binder.getValue) {
       return this.binder.getValue.call(this, el);
     } else {
       return getInputValue(el);
     }
-  };
+  } // Subscribe to the value changes
+  ;
 
-  // Subscribe to the value changes
+  _proto.subscribe = function subscribe(listener) {
+    var index = this.subscribers.push(listener) - 1; // Provide handle back for removal of listener
 
-
-  Binding.prototype.subscribe = function subscribe(listener) {
-    var index = this.subscribers.push(listener) - 1;
-
-    // Provide handle back for removal of listener
     return {
       remove: function remove() {
         delete this.subscribers[index];
       }
     };
-  };
+  } // Call the subscribers
+  ;
 
-  // Call the subscribers
-
-
-  Binding.prototype.callSubscribers = function callSubscribers(value) {
+  _proto.callSubscribers = function callSubscribers(value) {
     // Cycle through subscribers queue, fire!
     this.subscribers.forEach(function (item) {
       item(value);
     });
-  };
+  } // lock if not locked and returns false if already locked
+  ;
 
-  // lock if not locked and returns false if already locked
-
-
-  Binding.prototype.lock = function lock(locking) {
+  _proto.lock = function lock(locking) {
     // return locked state if none provided
     if (locking === undefined) {
       return this.locked;
@@ -828,24 +870,20 @@ var Binding = function () {
     }
 
     return this.locked = locking;
-  };
+  } // Returns the next of kin bindings on the same element
+  ;
 
-  // Returns the next of kin bindings on the same element
-
-
-  Binding.prototype.kins = function kins() {
+  _proto.kins = function kins() {
     var _this5 = this;
 
     return this.view.bindings.filter(function (x) {
       return x.el === _this5.el;
     });
-  };
-  // Returns the binding of a given type on the same element
+  } // Returns the binding of a given type on the same element
+  ;
 
-
-  Binding.prototype.kin = function kin(type) {
+  _proto.kin = function kin(type) {
     var mappedType = kick.binderMap[type] || type;
-
     return this.kins().find(function (x) {
       return x.type === mappedType;
     });
@@ -854,14 +892,11 @@ var Binding = function () {
   return Binding;
 }();
 
-//import ComponentBinding from './components'
-
 var textBinder = {
   routine: function routine(node, value) {
     node.data = value != null ? value : '';
   }
 };
-
 var DECLARATION_SPLIT = /((?:'[^']*')*(?:(?:[^\|']*(?:'[^']*')+[^\|']*)+|[^\|]+))|^$/g;
 var binderPrefixes = '@:^.-+?!*#$~'.split('');
 
@@ -884,6 +919,7 @@ var parseNode = function parseNode(view, node) {
 
       node.parentNode.removeChild(node);
     }
+
     block = true;
   } else if (node.nodeType === 1) {
     block = view.traverse(node);
@@ -904,17 +940,16 @@ var bindingComparator = function bindingComparator(a, b) {
 
 var trimStr = function trimStr(str) {
   return str.trim();
-};
+}; // A collection of bindings built from a set of parent nodes.
 
-// A collection of bindings built from a set of parent nodes.
 
-var View = function () {
+var View =
+/*#__PURE__*/
+function () {
   // The DOM elements and the model objects for binding are passed into the
   // constructor along with any local options that should be used throughout the
   // context of the view and it's bindings.
   function View(els, models, options) {
-    classCallCheck(this, View);
-
     if (els.jquery || els instanceof Array) {
       this.els = els;
     } else {
@@ -923,40 +958,38 @@ var View = function () {
 
     this.models = models;
     this.options = options;
-
     this.build();
   }
 
-  View.prototype.buildBinding = function buildBinding(node, type, declaration, binder, arg) {
-    var pipes = declaration.match(DECLARATION_SPLIT).map(trimStr);
+  var _proto = View.prototype;
 
+  _proto.buildBinding = function buildBinding(node, type, declaration, binder, arg) {
+    var pipes = declaration.match(DECLARATION_SPLIT).map(trimStr);
     var keypath = pipes.shift();
 
     if (arg === '' && type === '*') {
-      //resolve for in expression, useful for case sensitive members e.g. myItem in items
+      // resolve for in expression, useful for case sensitive members e.g. myItem in items
       var forRE = new RegExp(/^(.+)\s+in\s+(.[^|\s]+)(.*)$/gm);
-      var forExp = forRE.exec(keypath);
-      // console.log(forExp)
+      var forExp = forRE.exec(keypath); // console.log(forExp)
+
       if (forExp && forExp.length > 2) {
         arg = forExp[1] || arg;
         keypath = forExp[2] || keypath;
-      }
-      // console.log(forExp[3].split('|'))
+      } // console.log(forExp[3].split('|'))
+
     }
 
     this.bindings.push(new Binding(this, node, type, keypath, binder, arg, pipes));
-  };
-
-  // Parses the DOM tree and builds `Binding` instances for every matched
+  } // Parses the DOM tree and builds `Binding` instances for every matched
   // binding declaration.
+  ;
 
-
-  View.prototype.build = function build() {
+  _proto.build = function build() {
     this.bindings = [];
-
     var elements = this.els,
-        i = void 0,
-        len = void 0;
+        i,
+        len;
+
     for (i = 0, len = elements.length; i < len; i++) {
       parseNode(this, elements[i]);
     }
@@ -964,30 +997,30 @@ var View = function () {
     this.bindings.sort(bindingComparator);
   };
 
-  View.prototype.traverse = function traverse(node) {
+  _proto.traverse = function traverse(node) {
     // let bindingPrefix = kick._fullPrefix
     var block = node.nodeName === 'SCRIPT' || node.nodeName === 'STYLE';
     var attributes = node.attributes;
     var bindInfos = [];
     var varBinders = this.options.varBinders;
-    var mappedBinder = void 0;
+    var mappedBinder;
     var binderType, binder, identifier, arg;
 
     for (var i = 0, len = attributes.length; i < len; i++) {
-      var attribute = attributes[i];
-      // if (attribute.name.indexOf(bindingPrefix) === 0) {
+      var attribute = attributes[i]; // if (attribute.name.indexOf(bindingPrefix) === 0) {
+
       if (this.startWithBinder(attribute.name)) {
         // binderType = attribute.name.slice(bindingPrefix.length);
         mappedBinder = kick.binderMap[attribute.name];
-        binderType = mappedBinder || attribute.name;
+        binderType = mappedBinder || attribute.name; // type = attribute.name.slice(bindingPrefix.length)
 
-        // type = attribute.name.slice(bindingPrefix.length)
         binder = this.options.binders[binderType];
         arg = undefined;
 
         if (!binder) {
           for (var k = 0; k < varBinders.length; k++) {
             identifier = varBinders[k];
+
             if (binderType.slice(0, identifier.length - 1) === identifier.slice(0, -1)) {
               binder = this.options.binders[identifier];
               arg = binderType.slice(identifier.length - 1);
@@ -1006,7 +1039,12 @@ var View = function () {
           return true;
         }
 
-        bindInfos.push({ attr: attribute, binder: binder, type: binderType, arg: arg });
+        bindInfos.push({
+          attr: attribute,
+          binder: binder,
+          type: binderType,
+          arg: arg
+        });
       }
     }
 
@@ -1022,69 +1060,58 @@ var View = function () {
     }
 
     return block;
-  };
+  } // Binds all of the current bindings for this view.
+  ;
 
-  // Binds all of the current bindings for this view.
-
-
-  View.prototype.bind = function bind() {
+  _proto.bind = function bind() {
     this.bindings.forEach(function (binding) {
       binding.bind();
     });
-  };
+  } // Unbinds all of the current bindings for this view.
+  ;
 
-  // Unbinds all of the current bindings for this view.
-
-
-  View.prototype.unbind = function unbind() {
+  _proto.unbind = function unbind() {
     this.bindings.forEach(function (binding) {
       binding.unbind();
     });
-  };
+  } // Syncs up the view with the model by running the routines on all bindings.
+  ;
 
-  // Syncs up the view with the model by running the routines on all bindings.
-
-
-  View.prototype.sync = function sync() {
+  _proto.sync = function sync() {
     this.bindings.forEach(function (binding) {
       binding.sync();
     });
-  };
+  } // Publishes the input values from the view back to the model (reverse sync).
+  ;
 
-  // Publishes the input values from the view back to the model (reverse sync).
-
-
-  View.prototype.publish = function publish() {
+  _proto.publish = function publish() {
     this.bindings.forEach(function (binding) {
       if (binding.binder && binding.binder.publishes) {
         binding.publish();
       }
     });
-  };
+  } // Updates the view's models along with any affected bindings.
+  ;
 
-  // Updates the view's models along with any affected bindings.
-
-
-  View.prototype.update = function update() {
+  _proto.update = function update(models) {
     var _this = this;
 
-    var models = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    if (models === void 0) {
+      models = {};
+    }
 
     Object.keys(models).forEach(function (key) {
       _this.models[key] = models[key];
     });
-
     this.bindings.forEach(function (binding) {
       if (binding.update) {
         binding.update(models);
       }
     });
-  };
+  } // move it to utils
+  ;
 
-  // move it to utils
-
-
-  View.prototype.startWithBinder = function startWithBinder(name) {
+  _proto.startWithBinder = function startWithBinder(name) {
     var prefix = name.substr(0, 1);
     return binderPrefixes.some(function (pre) {
       return pre === prefix;
@@ -1094,20 +1121,459 @@ var View = function () {
   return View;
 }();
 
+var has$ = window.jQuery ? true : false;
+
+var on = function on(el, arg, handler) {
+  has$ ? $(el).on(arg, handler) : el.addEventListener(arg, handler);
+};
+
+var off = function off(el, arg, handler) {
+  has$ ? $(el).off(arg, handler) : el.removeEventListener(arg, handler);
+};
+
+var getString = function getString(value) {
+  return value != null ? value.toString() : undefined;
+};
+
+var times = function times(n, cb) {
+  for (var i = 0; i < n; i++) {
+    cb();
+  }
+};
+
+function createView(binding, data, anchorEl) {
+  var template = binding.el.cloneNode(true);
+  var view = new View(template, data, binding.view.options);
+  view.bind();
+  binding.marker.parentNode.insertBefore(template, anchorEl);
+  return view;
+}
+
+var binders = {
+  // Binds an event handler on the element.
+  '^&': {
+    function: true,
+    priority: 1000,
+    unbind: function unbind(el) {
+      if (this.handler) {
+        off(el, this.arg, this.handler);
+      }
+    },
+    routine: function routine(el, value) {
+      if (this.handler) {
+        off(el, this.arg, this.handler);
+      }
+
+      this.handler = this.eventHandler(value);
+      on(el, this.arg, this.handler);
+    }
+  },
+  // for $item Appends bound instances of the element in place for item in the array.
+  '*&': {
+    block: true,
+    priority: 4000,
+    bind: function bind(el) {
+      if (!this.marker) {
+        this.marker = document.createComment(" kick: " + this.type + " ");
+        this.iterated = [];
+        el.parentNode.insertBefore(this.marker, el);
+        el.parentNode.removeChild(el);
+      } else {
+        this.iterated.forEach(function (view) {
+          view.bind();
+        });
+      }
+    },
+    unbind: function unbind(el) {
+      if (this.iterated) {
+        this.iterated.forEach(function (view) {
+          view.unbind();
+        });
+      }
+    },
+    routine: function routine(el, collection) {
+      var _this = this;
+
+      var modelName = this.arg || '$item';
+      collection = collection || [];
+      var indexProp = el.getAttribute('#index') || el.getAttribute('index-property') || '$index';
+      collection.forEach(function (model, index) {
+        var data = {
+          $parent: _this.view.models
+        };
+        data[indexProp] = index;
+        data[modelName] = model;
+        var view = _this.iterated[index];
+
+        if (!view) {
+          var previous = _this.marker;
+
+          if (_this.iterated.length) {
+            previous = _this.iterated[_this.iterated.length - 1].els[0];
+          }
+
+          view = createView(_this, data, previous.nextSibling);
+
+          _this.iterated.push(view);
+        } else {
+          if (view.models[modelName] !== model) {
+            // search for a view that matches the model
+            var matchIndex, nextView;
+
+            for (var nextIndex = index + 1; nextIndex < _this.iterated.length; nextIndex++) {
+              nextView = _this.iterated[nextIndex];
+
+              if (nextView.models[modelName] === model) {
+                matchIndex = nextIndex;
+                break;
+              }
+            }
+
+            if (matchIndex !== undefined) {
+              // model is in other position
+              // todo: consider avoiding the splice here by setting a flag
+              // profile performance before implementing such change
+              _this.iterated.splice(matchIndex, 1);
+
+              _this.marker.parentNode.insertBefore(nextView.els[0], view.els[0]);
+
+              nextView.models[indexProp] = index;
+            } else {
+              //new model
+              nextView = createView(_this, data, view.els[0]);
+            }
+
+            _this.iterated.splice(index, 0, nextView);
+          } else {
+            view.models[indexProp] = index;
+          }
+        }
+      });
+
+      if (this.iterated.length > collection.length) {
+        times(this.iterated.length - collection.length, function () {
+          var view = _this.iterated.pop();
+
+          view.unbind();
+
+          _this.marker.parentNode.removeChild(view.els[0]);
+        });
+      }
+
+      if (el.nodeName === 'OPTION') {
+        this.view.bindings.forEach(function (binding) {
+          if (binding.el === _this.marker.parentNode && binding.type === 'value') {
+            binding.sync();
+          }
+        });
+      }
+    },
+    update: function update(models) {
+      var _this2 = this;
+
+      var data = {}; //todo: add test and fix if necessary
+
+      Object.keys(models).forEach(function (key) {
+        if (key !== _this2.arg) {
+          data[key] = models[key];
+        }
+      });
+      this.iterated.forEach(function (view) {
+        view.update(data);
+      });
+    }
+  },
+  // Order of ..& should be before .& otherwise match will trigger shorter length first
+  // removes the style from the element when there is value
+  '-..&': function _(el, value) {
+    var propertyName = this.arg;
+
+    if (value) {
+      el.style[propertyName] = '';
+    }
+  },
+  // Order of ..& should be before .& otherwise match will trigger shorter length first
+  // Adds or removes the style from the element when there is value
+  '..&': function _(el, value) {
+    var propertyName = this.arg;
+
+    if (value) {
+      el.style[propertyName] = value;
+    } else {
+      el.style[propertyName] = '';
+    }
+  },
+  // Adds or removes the class from the element when value is false or true.
+  '-.&': function _(el, value) {
+    var elClass = " " + el.className + " ";
+
+    if (value === elClass.indexOf(" " + this.arg + " ") > -1) {
+      if (value) {
+        el.className = elClass.replace(" " + this.arg + " ", ' ').trim();
+      } else {
+        el.className = el.className + " " + this.arg;
+      }
+    }
+  },
+  // Adds or removes the class from the element when value is true or false.
+  '.&': function _(el, value) {
+    var elClass = " " + el.className + " ";
+
+    if (!value === elClass.indexOf(" " + this.arg + " ") > -1) {
+      if (value) {
+        el.className = el.className + " " + this.arg;
+      } else {
+        el.className = elClass.replace(" " + this.arg + " ", ' ').trim();
+      }
+    }
+  },
+  // Sets the element's text value.
+  ':text': function text(el, value) {
+    el.textContent = value != null ? value : '';
+  },
+  // Sets the element's HTML content.
+  ':html': function html(el, value) {
+    el.innerHTML = value != null ? value : '';
+  },
+  // Shows the element when value is true.
+  ':show': function show(el, value) {
+    el.style.display = value ? '' : 'none';
+  },
+  // Hides the element when value is true (negated version of `show` binder).
+  ':hide': function hide(el, value) {
+    el.style.display = value ? 'none' : '';
+  },
+  // Enables the element when value is true.
+  ':enabled': function enabled(el, value) {
+    el.disabled = !value;
+  },
+  // Disables the element when value is true (negated version of `enabled` binder).
+  ':disabled': function disabled(el, value) {
+    el.disabled = !!value;
+  },
+  // Checks a checkbox or radio input when the value is true. Also sets the model
+  // property when the input is checked or unchecked (two-way binder).
+  // also "@x"
+  '@checked': {
+    publishes: true,
+    priority: 2000,
+    bind: function bind(el) {
+      var self = this;
+
+      if (!this.callback) {
+        this.callback = function () {
+          self.publish();
+        };
+      }
+
+      el.addEventListener('change', this.callback);
+    },
+    unbind: function unbind(el) {
+      el.removeEventListener('change', this.callback);
+    },
+    routine: function routine(el, value) {
+      if (el.type === 'radio') {
+        el.checked = getString(el.value) === getString(value);
+      } else {
+        el.checked = !!value;
+      }
+    }
+  },
+  // Unchecks a checkbox or radio input when the value is true. Also sets the model
+  // property when the input is checked or unchecked (two-way binder).
+  // also "@-x"
+  '@unchecked': {
+    publishes: true,
+    priority: 2000,
+    bind: function bind(el) {
+      var self = this;
+
+      if (!this.callback) {
+        this.callback = function () {
+          self.publish();
+        };
+      }
+
+      el.addEventListener('change', this.callback);
+    },
+    unbind: function unbind(el) {
+      el.removeEventListener('change', this.callback);
+    },
+    routine: function routine(el, value) {
+      if (el.type === 'radio') {
+        el.checked = !(getString(el.value) === getString(value));
+      } else {
+        el.checked = !!!value;
+      }
+    }
+  },
+  // Sets the element's value. Also sets the model property when the input changes
+  // (two-way binder).
+  '@value': {
+    publishes: true,
+    priority: 3000,
+    bind: function bind(el) {
+      this.isRadio = el.tagName === 'INPUT' && el.type === 'radio';
+
+      if (!this.isRadio) {
+        this.event = el.getAttribute('event-name') || (el.tagName === 'SELECT' ? 'change' : 'input');
+        var self = this;
+
+        if (!this.callback) {
+          this.callback = function () {
+            self.publish();
+          };
+        }
+
+        el.addEventListener(this.event, this.callback);
+      }
+    },
+    unbind: function unbind(el) {
+      if (!this.isRadio) {
+        el.removeEventListener(this.event, this.callback);
+      }
+    },
+    routine: function routine(el, value) {
+      if (this.isRadio) {
+        el.setAttribute('value', value);
+      } else {
+        if (el.type === 'select-multiple') {
+          if (value instanceof Array) {
+            for (var i = 0; i < el.length; i++) {
+              var option = el[i];
+              option.selected = value.indexOf(option.value) > -1;
+            }
+          }
+        } else if (getString(value) !== getString(el.value)) {
+          el.value = value != null ? value : '';
+        }
+      }
+    }
+  },
+  // Inserts and binds the element and it's child nodes into the DOM when true.
+  '?': {
+    block: true,
+    priority: 4000,
+    bind: function bind(el) {
+      if (!this.marker) {
+        this.marker = document.createComment(' kick: ' + this.type + ' ' + this.keypath + ' ');
+        this.attached = false;
+        el.parentNode.insertBefore(this.marker, el);
+        el.parentNode.removeChild(el);
+      } else if (this.bound === false && this.nested) {
+        this.nested.bind();
+      }
+
+      this.bound = true;
+    },
+    unbind: function unbind() {
+      if (this.nested) {
+        this.nested.unbind();
+        this.bound = false;
+      }
+    },
+    routine: function routine(el, value) {
+      if (!!value !== this.attached) {
+        if (value) {
+          if (!this.nested) {
+            this.nested = new View(el, this.view.models, this.view.options);
+            this.nested.bind();
+          }
+
+          this.marker.parentNode.insertBefore(el, this.marker.nextSibling);
+          this.attached = true;
+        } else {
+          el.parentNode.removeChild(el);
+          this.attached = false;
+        }
+      }
+    },
+    update: function update(models) {
+      if (this.nested) {
+        this.nested.update(models);
+      }
+    }
+  },
+  // Inserts and binds the element and it's child nodes into the DOM when false.
+  '-?': {
+    block: true,
+    priority: 4001,
+    bind: function bind(el) {
+      if (!this.marker) {
+        this.marker = document.createComment(' kick: ' + this.type + ' ' + this.keypath + ' ');
+        this.attached = false;
+        el.parentNode.insertBefore(this.marker, el);
+        el.parentNode.removeChild(el);
+      } else if (this.bound === false && this.nested) {
+        this.nested.bind();
+      }
+
+      this.bound = true;
+    },
+    unbind: function unbind() {
+      if (this.nested) {
+        this.nested.unbind();
+        this.bound = false;
+      }
+    },
+    routine: function routine(el, value) {
+      if (!!value === this.attached) {
+        if (!value) {
+          if (!this.nested) {
+            this.nested = new View(el, this.view.models, this.view.options);
+            this.nested.bind();
+          }
+
+          this.marker.parentNode.insertBefore(el, this.marker.nextSibling);
+          this.attached = true;
+        } else {
+          el.parentNode.removeChild(el);
+          this.attached = false;
+        }
+      }
+    },
+    update: function update(models) {
+      if (this.nested) {
+        this.nested.update(models);
+      }
+    }
+  },
+  ':&': function _(el, value) {
+    if (value != null) {
+      el.setAttribute(this.arg, value);
+    } else {
+      el.removeAttribute(this.arg);
+    }
+  },
+  '-:&': function _(el, value) {
+    if (value != null) {
+      el.removeAttribute(this.arg);
+    }
+  }
+};
+
+var formatters = {
+  watch: function watch(value) {
+    return value;
+  },
+  not: function not(value) {
+    return !value;
+  },
+  negate: function negate(value) {
+    return !value;
+  }
+};
+
 // The default `.` adapter that comes with kick.js. Allows subscribing to
 // properties on plain objects, implemented in ES5 natives using
 // `Object.defineProperty`.
-
 var ARRAY_METHODS = ['push', 'pop', 'shift', 'unshift', 'sort', 'reverse', 'splice'];
-
 var adapter = {
   counter: 0,
   weakmap: {},
-
   weakReference: function weakReference(obj) {
     if (!obj.hasOwnProperty('__rv')) {
       var id = this.counter++;
-
       Object.defineProperty(obj, '__rv', {
         value: id
       });
@@ -1121,7 +1587,6 @@ var adapter = {
 
     return this.weakmap[obj.__rv];
   },
-
   cleanupWeakReference: function cleanupWeakReference(ref, id) {
     if (!Object.keys(ref.callbacks).length) {
       if (!(ref.pointers && Object.keys(ref.pointers).length)) {
@@ -1129,19 +1594,17 @@ var adapter = {
       }
     }
   },
-
   stubFunction: function stubFunction(obj, fn) {
     var original = obj[fn];
     var map = this.weakReference(obj);
     var weakmap = this.weakmap;
 
     obj[fn] = function () {
-      for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+      for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
         args[_key] = arguments[_key];
       }
 
       var response = original.apply(obj, args);
-
       Object.keys(map.pointers).forEach(function (r) {
         var k = map.pointers[r];
 
@@ -1153,11 +1616,9 @@ var adapter = {
           }
         }
       });
-
       return response;
     };
   },
-
   observeMutations: function observeMutations(obj, ref, keypath) {
     var _this = this;
 
@@ -1166,7 +1627,6 @@ var adapter = {
 
       if (!map.pointers) {
         map.pointers = {};
-
         ARRAY_METHODS.forEach(function (fn) {
           _this.stubFunction(obj, fn);
         });
@@ -1181,7 +1641,6 @@ var adapter = {
       }
     }
   },
-
   unobserveMutations: function unobserveMutations(obj, ref, keypath) {
     if (obj instanceof Array && obj.__rv != null) {
       var map = this.weakmap[obj.__rv];
@@ -1205,7 +1664,6 @@ var adapter = {
       }
     }
   },
-
   observe: function observe(obj, keypath, callback) {
     var _this2 = this;
 
@@ -1218,17 +1676,15 @@ var adapter = {
 
       if (!desc || !(desc.get || desc.set || !desc.configurable)) {
         value = obj[keypath];
-
         Object.defineProperty(obj, keypath, {
           enumerable: true,
-
           get: function get() {
             return value;
           },
-
           set: function set(newValue) {
             if (newValue !== value) {
               _this2.unobserveMutations(value, obj.__rv, keypath);
+
               value = newValue;
               var map = _this2.weakmap[obj.__rv];
 
@@ -1255,7 +1711,6 @@ var adapter = {
 
     this.observeMutations(obj[keypath], obj.__rv, keypath);
   },
-
   unobserve: function unobserve(obj, keypath, callback) {
     var map = this.weakmap[obj.__rv];
 
@@ -1278,380 +1733,242 @@ var adapter = {
       }
     }
   },
-
   get: function get(obj, keypath) {
     return obj[keypath];
   },
-
   set: function set(obj, keypath, value) {
     obj[keypath] = value;
   }
 };
 
-var getString = function getString(value) {
-  return value != null ? value.toString() : undefined;
-};
-
-var times = function times(n, cb) {
-  for (var i = 0; i < n; i++) {
-    cb();
+function _defineProperties(target, props) {
+  for (var i = 0; i < props.length; i++) {
+    var descriptor = props[i];
+    descriptor.enumerable = descriptor.enumerable || false;
+    descriptor.configurable = true;
+    if ("value" in descriptor) descriptor.writable = true;
+    Object.defineProperty(target, descriptor.key, descriptor);
   }
-};
-
-function createView(binding, data, anchorEl) {
-  var template = binding.el.cloneNode(true);
-  var view = new View(template, data, binding.view.options);
-  view.bind();
-  binding.marker.parentNode.insertBefore(template, anchorEl);
-  return view;
 }
 
-var binders = {
-  // Binds an event handler on the element.
-  '^&': {
-    function: true,
-    priority: 1000,
+function _createClass(Constructor, protoProps, staticProps) {
+  if (protoProps) _defineProperties(Constructor.prototype, protoProps);
+  if (staticProps) _defineProperties(Constructor, staticProps);
+  return Constructor;
+}
 
-    unbind: function unbind(el) {
-      if (this.handler) {
-        el.removeEventListener(this.arg, this.handler);
-      }
-    },
+function _inheritsLoose(subClass, superClass) {
+  subClass.prototype = Object.create(superClass.prototype);
+  subClass.prototype.constructor = subClass;
+  subClass.__proto__ = superClass;
+}
 
-    routine: function routine(el, value) {
-      if (this.handler) {
-        el.removeEventListener(this.arg, this.handler);
-      }
+function _getPrototypeOf(o) {
+  _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+    return o.__proto__ || Object.getPrototypeOf(o);
+  };
+  return _getPrototypeOf(o);
+}
 
-      this.handler = this.eventHandler(value);
-      el.addEventListener(this.arg, this.handler);
-    }
-  },
+function _setPrototypeOf(o, p) {
+  _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+    o.__proto__ = p;
+    return o;
+  };
 
-  // for $item Appends bound instances of the element in place for item in the array.
-  '*&': {
-    block: true,
+  return _setPrototypeOf(o, p);
+}
 
-    priority: 4000,
+function isNativeReflectConstruct() {
+  if (typeof Reflect === "undefined" || !Reflect.construct) return false;
+  if (Reflect.construct.sham) return false;
+  if (typeof Proxy === "function") return true;
 
-    bind: function bind(el) {
-      if (!this.marker) {
-        this.marker = document.createComment(' kick: ' + this.type + ' ');
-        this.iterated = [];
-
-        el.parentNode.insertBefore(this.marker, el);
-        el.parentNode.removeChild(el);
-      } else {
-        this.iterated.forEach(function (view) {
-          view.bind();
-        });
-      }
-    },
-
-    unbind: function unbind(el) {
-      if (this.iterated) {
-        this.iterated.forEach(function (view) {
-          view.unbind();
-        });
-      }
-    },
-
-    routine: function routine(el, collection) {
-      var _this = this;
-
-      var modelName = this.arg || '$item';
-      collection = collection || [];
-      var indexProp = el.getAttribute('#index') || el.getAttribute('index-property') || '$index';
-
-      collection.forEach(function (model, index) {
-        var data = { $parent: _this.view.models };
-        data[indexProp] = index;
-        data[modelName] = model;
-        var view = _this.iterated[index];
-
-        if (!view) {
-
-          var previous = _this.marker;
-
-          if (_this.iterated.length) {
-            previous = _this.iterated[_this.iterated.length - 1].els[0];
-          }
-
-          view = createView(_this, data, previous.nextSibling);
-          _this.iterated.push(view);
-        } else {
-          if (view.models[modelName] !== model) {
-            // search for a view that matches the model
-            var matchIndex = void 0,
-                nextView = void 0;
-            for (var nextIndex = index + 1; nextIndex < _this.iterated.length; nextIndex++) {
-              nextView = _this.iterated[nextIndex];
-              if (nextView.models[modelName] === model) {
-                matchIndex = nextIndex;
-                break;
-              }
-            }
-            if (matchIndex !== undefined) {
-              // model is in other position
-              // todo: consider avoiding the splice here by setting a flag
-              // profile performance before implementing such change
-              _this.iterated.splice(matchIndex, 1);
-              _this.marker.parentNode.insertBefore(nextView.els[0], view.els[0]);
-              nextView.models[indexProp] = index;
-            } else {
-              //new model
-              nextView = createView(_this, data, view.els[0]);
-            }
-            _this.iterated.splice(index, 0, nextView);
-          } else {
-            view.models[indexProp] = index;
-          }
-        }
-      });
-
-      if (this.iterated.length > collection.length) {
-        times(this.iterated.length - collection.length, function () {
-          var view = _this.iterated.pop();
-          view.unbind();
-          _this.marker.parentNode.removeChild(view.els[0]);
-        });
-      }
-
-      if (el.nodeName === 'OPTION') {
-        this.view.bindings.forEach(function (binding) {
-          if (binding.el === _this.marker.parentNode && binding.type === 'value') {
-            binding.sync();
-          }
-        });
-      }
-    },
-
-    update: function update(models) {
-      var _this2 = this;
-
-      var data = {};
-
-      //todo: add test and fix if necessary
-      Object.keys(models).forEach(function (key) {
-        if (key !== _this2.arg) {
-          data[key] = models[key];
-        }
-      });
-
-      this.iterated.forEach(function (view) {
-        view.update(data);
-      });
-    }
-  },
-
-  // Order of ..& should be before .& otherwise match will trigger shorter length first
-  '..&': function _(el, value) {
-    var propertyName = this.arg;
-    if (value) {
-      el.style[propertyName] = value;
-    } else {
-      el.style[propertyName] = '';
-    }
-  },
-
-  // Adds or removes the class from the element when value is true or false.
-  '.&': function _(el, value) {
-    var elClass = ' ' + el.className + ' ';
-
-    if (!value === elClass.indexOf(' ' + this.arg + ' ') > -1) {
-      if (value) {
-        el.className = el.className + ' ' + this.arg;
-      } else {
-        el.className = elClass.replace(' ' + this.arg + ' ', ' ').trim();
-      }
-    }
-  },
-
-  // Sets the element's text value.
-  ':text': function text(el, value) {
-    el.textContent = value != null ? value : '';
-  },
-
-  // Sets the element's HTML content.
-  ':html': function html(el, value) {
-    el.innerHTML = value != null ? value : '';
-  },
-
-  // Shows the element when value is true.
-  ':show': function show(el, value) {
-    el.style.display = value ? '' : 'none';
-  },
-
-  // Hides the element when value is true (negated version of `show` binder).
-  ':hide': function hide(el, value) {
-    el.style.display = value ? 'none' : '';
-  },
-
-  // Enables the element when value is true.
-  ':enabled': function enabled(el, value) {
-    el.disabled = !value;
-  },
-
-  // Disables the element when value is true (negated version of `enabled` binder).
-  ':disabled': function disabled(el, value) {
-    el.disabled = !!value;
-  },
-
-  // Checks a checkbox or radio input when the value is true. Also sets the model
-  // property when the input is checked or unchecked (two-way binder).
-  '@checked': {
-    publishes: true,
-    priority: 2000,
-
-    bind: function bind(el) {
-      var self = this;
-      if (!this.callback) {
-        this.callback = function () {
-          self.publish();
-        };
-      }
-      el.addEventListener('change', this.callback);
-    },
-
-    unbind: function unbind(el) {
-      el.removeEventListener('change', this.callback);
-    },
-
-    routine: function routine(el, value) {
-      if (el.type === 'radio') {
-        el.checked = getString(el.value) === getString(value);
-      } else {
-        el.checked = !!value;
-      }
-    }
-  },
-
-  // Sets the element's value. Also sets the model property when the input changes
-  // (two-way binder).
-  '@value': {
-    publishes: true,
-    priority: 3000,
-
-    bind: function bind(el) {
-      this.isRadio = el.tagName === 'INPUT' && el.type === 'radio';
-      if (!this.isRadio) {
-        this.event = el.getAttribute('event-name') || (el.tagName === 'SELECT' ? 'change' : 'input');
-
-        var self = this;
-        if (!this.callback) {
-          this.callback = function () {
-            self.publish();
-          };
-        }
-
-        el.addEventListener(this.event, this.callback);
-      }
-    },
-
-    unbind: function unbind(el) {
-      if (!this.isRadio) {
-        el.removeEventListener(this.event, this.callback);
-      }
-    },
-
-    routine: function routine(el, value) {
-      if (this.isRadio) {
-        el.setAttribute('value', value);
-      } else {
-        if (el.type === 'select-multiple') {
-          if (value instanceof Array) {
-            for (var i = 0; i < el.length; i++) {
-              var option = el[i];
-              option.selected = value.indexOf(option.value) > -1;
-            }
-          }
-        } else if (getString(value) !== getString(el.value)) {
-          el.value = value != null ? value : '';
-        }
-      }
-    }
-  },
-
-  // Inserts and binds the element and it's child nodes into the DOM when true.
-  '?': {
-    block: true,
-    priority: 4000,
-
-    bind: function bind(el) {
-      if (!this.marker) {
-        this.marker = document.createComment(' kick: ' + this.type + ' ' + this.keypath + ' ');
-        this.attached = false;
-
-        el.parentNode.insertBefore(this.marker, el);
-        el.parentNode.removeChild(el);
-      } else if (this.bound === false && this.nested) {
-        this.nested.bind();
-      }
-      this.bound = true;
-    },
-
-    unbind: function unbind() {
-      if (this.nested) {
-        this.nested.unbind();
-        this.bound = false;
-      }
-    },
-
-    routine: function routine(el, value) {
-      if (!!value !== this.attached) {
-        if (value) {
-
-          if (!this.nested) {
-            this.nested = new View(el, this.view.models, this.view.options);
-            this.nested.bind();
-          }
-
-          this.marker.parentNode.insertBefore(el, this.marker.nextSibling);
-          this.attached = true;
-        } else {
-          el.parentNode.removeChild(el);
-          this.attached = false;
-        }
-      }
-    },
-
-    update: function update(models) {
-      if (this.nested) {
-        this.nested.update(models);
-      }
-    }
-  },
-  '::&': function _(el, value) {
-    if (value != null) {
-      el.setAttribute(this.arg, value);
-    } else {
-      el.removeAttribute(this.arg);
-    }
+  try {
+    Date.prototype.toString.call(Reflect.construct(Date, [], function () {}));
+    return true;
+  } catch (e) {
+    return false;
   }
-};
+}
 
-//import router from './router'
-//import components from './components'
+function _construct(Parent, args, Class) {
+  if (isNativeReflectConstruct()) {
+    _construct = Reflect.construct;
+  } else {
+    _construct = function _construct(Parent, args, Class) {
+      var a = [null];
+      a.push.apply(a, args);
+      var Constructor = Function.bind.apply(Parent, a);
+      var instance = new Constructor();
+      if (Class) _setPrototypeOf(instance, Class.prototype);
+      return instance;
+    };
+  }
 
-// Returns the public interface.
+  return _construct.apply(null, arguments);
+}
+
+function _isNativeFunction(fn) {
+  return Function.toString.call(fn).indexOf("[native code]") !== -1;
+}
+
+function _wrapNativeSuper(Class) {
+  var _cache = typeof Map === "function" ? new Map() : undefined;
+
+  _wrapNativeSuper = function _wrapNativeSuper(Class) {
+    if (Class === null || !_isNativeFunction(Class)) return Class;
+
+    if (typeof Class !== "function") {
+      throw new TypeError("Super expression must either be null or a function");
+    }
+
+    if (typeof _cache !== "undefined") {
+      if (_cache.has(Class)) return _cache.get(Class);
+
+      _cache.set(Class, Wrapper);
+    }
+
+    function Wrapper() {
+      return _construct(Class, arguments, _getPrototypeOf(this).constructor);
+    }
+
+    Wrapper.prototype = Object.create(Class.prototype, {
+      constructor: {
+        value: Wrapper,
+        enumerable: false,
+        writable: true,
+        configurable: true
+      }
+    });
+    return _setPrototypeOf(Wrapper, Class);
+  };
+
+  return _wrapNativeSuper(Class);
+}
+
+function _assertThisInitialized(self) {
+  if (self === void 0) {
+    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+  }
+
+  return self;
+}
+
+var Component =
+/*#__PURE__*/
+function (_HTMLElement) {
+  _inheritsLoose(Component, _HTMLElement);
+
+  Component.setObservedAttributes = function setObservedAttributes(_comp) {
+    var template = _comp.template;
+    var tag = _comp.tag;
+
+    if (!template || !tag) {
+      throw new Error("No template or tag declared for " + this.name);
+    }
+
+    _comp.__templateEl = document.createElement('template');
+    _comp.__templateEl.innerHTML = template;
+    var propAttributeMap = _comp.__propAttributeMap = {};
+    var attributes = [];
+    var properties = _comp.properties;
+
+    if (properties) {
+      Object.keys(properties).forEach(function (propName) {
+        var propConfig = properties[propName];
+        var attrName = typeof propConfig === 'string' ? propConfig : propName;
+        propAttributeMap[attrName] = propName;
+        attributes.push(attrName); // this.vm[propName] = propConfig
+      });
+    }
+
+    return attributes;
+  };
+
+  var _proto = Component.prototype;
+
+  _proto.connectedCallback = function connectedCallback() {
+    var nodes = this.constructor.__templateEl.content.cloneNode(true);
+
+    this.__kickView = kick.bind(nodes, this);
+
+    while (this.firstChild) {
+      this.removeChild(this.firstChild);
+    }
+
+    this.__kickView.sync();
+
+    this.appendChild(nodes);
+
+    this.__kickView.sync();
+
+    this.afterInit();
+  };
+
+  _proto.disconnectedCallback = function disconnectedCallback() {
+    this.beforeExit();
+
+    this.__kickView.unbind();
+  };
+
+  _proto.attributeChangedCallback = function attributeChangedCallback(name, old, value) {
+    if (old !== value) {
+      var propName = this.constructor.__propAttributeMap[name];
+      this[propName] = value;
+    }
+  };
+
+  _createClass(Component, null, [{
+    key: "observedAttributes",
+    get: function get() {
+      return this.setObservedAttributes(this);
+    }
+  }]);
+
+  function Component() {
+    var _this;
+
+    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+
+    var self = _this = _HTMLElement.call.apply(_HTMLElement, [this].concat(args)) || this; // !this.properties && this.setObservedAttributes(this)
+    // this.__templateEl = document.createElement('template')
+    // this.__templateEl.innerHTML = this.template
+    //let templateContent = template.content
+
+
+    _this.onInit();
+
+    return self || _assertThisInitialized(_this);
+  }
+
+  _proto.onInit = function onInit() {};
+
+  _proto.afterInit = function afterInit() {};
+
+  _proto.beforeExit = function beforeExit() {};
+
+  return Component;
+}(_wrapNativeSuper(HTMLElement));
+
 kick.binders = binders;
-//kick.components = components
+kick.formatters = formatters;
 kick.adapters['.'] = adapter;
-//kick.router = router
-
+kick.Component = Component; //kick.router = router
 // Binds some data to a template / element. Returns a kick.View instance.
+
 kick.bind = function (elm, models, options) {
   // if element then return itself
   elm = elm || '[kick-app]';
   var el = elm.nodeType && elm.nodeType > 0 ? elm : document.querySelector(elm);
-  // max 2 tries to add newly added elements, can't do recursive as included file might have multiple ements and outerHTML doesn't support this 
-  kick.includeFile(el);
-  //kick.includeFile(el);
+  kick.includeFile(el); // refresh the el again after loading files
 
+  el = elm.nodeType && elm.nodeType > 0 ? elm : document.querySelector(elm);
   var viewOptions = {};
   models = models || {};
   options = options || {};
-
   EXTENSIONS.forEach(function (extensionType) {
     viewOptions[extensionType] = Object.create(null);
 
@@ -1668,42 +1985,54 @@ kick.bind = function (elm, models, options) {
     });
   });
 
+  if (viewOptions[COMPS]) {
+    Object.keys(viewOptions[COMPS]).forEach(function (key) {
+      var comp = viewOptions[COMPS][key]; //kick.components[comp.tag] = comp;
+
+      if (comp.tag && !customElements.get(comp.tag)) {
+        customElements.define(comp.tag, comp);
+      }
+    });
+  }
+
   OPTIONS.forEach(function (option) {
     var value = options[option];
     viewOptions[option] = value != null ? value : kick[option];
   });
-
   viewOptions.varBinders = Object.keys(viewOptions.binders).filter(function (key) {
     return key.indexOf('&') > 0;
   });
-
   Observer.updateOptions(viewOptions);
-
   var view = new View(el, models, viewOptions);
   view.bind();
   return view;
-};
-
-// Initializes a new instance of a component on the specified element and
+}; // Initializes a new instance of a component on the specified element and
 // returns a View instance.
-kick.init = function (component, el) {
-  var data = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
+
+kick.init = function (component, el, data) {
+  if (data === void 0) {
+    data = {};
+  }
 
   if (el == null) {
     el = document.createElement('div');
   }
+
   component = kick.components[component];
   var template = component.template.call(kick, el);
+
   if (template instanceof HTMLElement) {
     while (el.firstChild) {
       el.removeChild(el.firstChild);
     }
+
     el.appendChild(template);
   } else {
     el.innerHTML = template;
   }
-  var scope = component.initialize.call(kick, el, data);
 
+  var scope = component.initialize.call(kick, el, data);
   var view = new View(el, scope);
   view.bind();
   return view;
@@ -1714,16 +2043,17 @@ kick.formatters.negate = kick.formatters.not = function (value) {
 };
 
 kick.formatters.call = function (value) {
-  for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+  for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
     args[_key - 1] = arguments[_key];
   }
 
   if (!args.length) {
     return;
   }
+
   var fn = args[0];
-  args = Array.prototype.slice.call(args, 1);
-  //value.call(...args)
+  args = Array.prototype.slice.call(args, 1); //value.call(...args)
+
   return fn.call.apply(fn, [value].concat(args));
   /* fix later if needs to be
   return () => {
@@ -1736,14 +2066,14 @@ kick.loadFile = function (el, file) {
   /* Make an HTTP request using the attribute value as the file name: */
   try {
     var xhttp = new XMLHttpRequest();
+
     xhttp.onreadystatechange = function () {
       if (this.readyState == 4) {
         if (this.status == 200) {
           /* Remove the attribute, and call this function once more: */
           if (el.tagName === 'KICKER') {
             // replace el with new html
-            el.outerHTML = this.responseText;
-            // not sure about the below yet 
+            el.outerHTML = this.responseText; // not sure about the below yet 
             // kick.includeFile(el.parent);
           } else {
             el.removeAttribute(":file");
@@ -1757,26 +2087,35 @@ kick.loadFile = function (el, file) {
         }
       }
     };
-    xhttp.open("GET", file, true);
+
+    xhttp.open("GET", file, false);
     xhttp.send();
   } catch (e) {
     el.innerHTML = '<!-- Unable to connect to server -->';
   }
-};
+}; // Sets the element's HTML content from file.
 
-// Sets the element's HTML content from file.
+
 kick.includeFile = function (el) {
-  var z = void 0,
-      i = void 0,
-      elmnt = void 0,
-      file = void 0;
-  /* Loop through a collection of all HTML elements: */
-  z = el.getElementsByTagName("*");
+  var z, i, elmnt, file;
+
+  if (!el.getElementsByTagName) {
+    if (el.children.length) {
+      z = el.children;
+    } else {
+      return;
+    }
+  } else {
+    /* Loop through a collection of all HTML elements: */
+    z = el.getElementsByTagName("*");
+  }
 
   for (i = 0; i < z.length; i++) {
     elmnt = z[i];
     /*search for elements with a certain atrribute:*/
+
     file = elmnt.getAttribute(":file");
+
     if (file) {
       kick.loadFile(elmnt, file);
     }

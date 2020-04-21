@@ -1,0 +1,63 @@
+<html>
+
+<head>
+    <!-- Bootstrap core CSS -->
+    <link href="https://getbootstrap.com/docs/4.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+
+<body>
+    <div kick-app>
+        <div>
+            <div id="main" ..width="'50%'">
+                <h2>High Priority Tasks</h2>
+                <div id="itemList1" class="items" :sort-list="setSortables(highPriorityTasks)">
+                    <div class="item" *item="highPriorityTasks" :sort-item="item">
+                        <a href="#" :="item.name" ^="selectTask(item)" -="show(item, item.show)"></a>
+                        <input @="item.name" ^-="blur(item)" +="show(item, item.show)" />
+                    </div>
+                </div>
+
+                <!--<div class="container high" data-bind="template: { name: 'taskTmpl', foreach: highPriorityTasks, templateOptions: { parentList: highPriorityTasks} }, sortableList: highPriorityTasks"></div>-->
+
+                <h2>Tasks</h2>
+                <div id="itemList2" class="items" :sort-list="setSortables(normalPriorityTasks)">
+                    <div class="item" *item="normalPriorityTasks" :sort-item="item">
+                        <a href="#" :="item.name" ^="selectTask(item)" -="item.show"></a>
+                        <input @="item.name" ^-="blur(item)" +="item.show" />
+                    </div>
+                </div>
+                <a href="#" ^="addTask()">Add Task</a>
+
+                <h2>Trash Bin</h2>
+                <div class="items container" :sort-list="trash" ..width="'100%'">
+
+                </div>
+            </div>
+
+            <div id="results" ..width="'40%'">
+                <h2>High Priority Tasks</h2>
+                <ul>
+                    <li *item="highPriorityTasks" :="item.name" />
+                </ul>
+                <hr>
+                <h2>Tasks</h2>
+                <ul>
+                    <li *item="normalPriorityTasks" :="item.name" />
+                </ul>
+                <h2>Bin</h2>
+                <ul>
+                    <li *item="trash" :="item.name" />
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+<script src="https://code.jquery.com/jquery-2.2.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+<script src="../../dist/kick.js"></script>
+<script src="kick.sortable.js"></script>
+<script src="index.js"></script>
+
+</html>

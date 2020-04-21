@@ -189,8 +189,68 @@ export function parseFnExpr(expr) {
       }
     });
     return results;
-  }
+  } 
 
   //return if we were able to parse functions otherwise it will be null
   return jsNested(expr)._[0] || null;
+}
+
+
+// Someone bored at http://jsfiddle.net/ryanwheale/e8aaa8ny/3/
+let parseEngine = {
+  toSourceString: function(obj, recursion) {
+      let strout = "";
+      
+      recursion = recursion || 0;
+      for(let prop in obj) {
+          if (obj.hasOwnProperty(prop)) {
+              strout += recursion ? "    " + prop + ": " : "var " + prop + " = ";
+              switch (typeof obj[prop]) {
+                  case "string":
+                  case "number":
+                  case "boolean":
+                  case "undefined":
+                      strout += JSON.stringify(obj[prop]);
+                      break;
+                      
+                  case "function":
+                      // won't work in older browsers
+                      strout += obj[prop].toString();
+                      break;
+                      
+                  case "object":
+                      if (!obj[prop])
+                          strout += JSON.stringify(obj[prop]);
+                      else if (obj[prop] instanceof RegExp)
+                          strout += obj[prop].toString();
+                      else if (obj[prop] instanceof Date)
+                          strout += "new Date(" + JSON.stringify(obj[prop]) + ")";
+                      else if (obj[prop] instanceof Array)
+                          strout += "Array.prototype.slice.call({\n "
+                              + this.toSourceString(obj[prop], recursion + 1)
+                              + "    length: " + obj[prop].length
+                          + "\n })";
+                      else
+                          strout += "{\n "
+                              + this.toSourceString(obj[prop], recursion + 1).replace(/\,\s*$/, '')
+                          + "\n }";
+                      break;
+              }
+              
+              strout += recursion ? ",\n " : ";\n ";
+          }
+      }
+      return strout;
+  },
+  evaluate: function(strInput, obj) {
+      let str = this.toSourceString(obj);
+      console.log(str);
+      return (new Function(str + 'return ' + strInput))();
+  }
+};
+
+// Haven't tested yet just a fluke or placeholder
+export function parseExpr(expr, ctx){
+  //console.log(engine.evaluate(strFn, context));
+  return parseEngine.evaluate(expr, ctx);
 }

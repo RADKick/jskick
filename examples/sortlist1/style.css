@@ -1,0 +1,75 @@
+body {
+  font-family: arial;
+}
+
+h2 {
+  font-weight: bold;
+}
+
+div {
+  padding: 5px;
+  margin: 5px;
+  border: #eee 1px solid;
+}
+
+p,
+a {
+  font-size: .8em;
+}
+
+ul {
+  padding-bottom: 10px;
+}
+
+.container {
+  width: 125px;
+  min-height: 50px;
+  background-color: #AAA;
+}
+
+.high {
+  background-color: red;
+}
+
+.trash {
+  background-color: #000;
+}
+
+.item {
+  background-color: #DDD;
+  cursor: move;
+}
+
+.item input {
+  width: 100px;
+}
+
+#main {
+  float: left;
+}
+
+#results {
+  min-width: 150px;
+  float: right;
+}
+
+
+.bold{font-weight: 600}
+.lg{font-size: 26px;}
+.gr{color:#555}
+
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+td, th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+}
+
+tr:nth-child(even) {
+  background-color: #dddddd;
+}

@@ -1,6 +1,11 @@
 import View from './view'
 import kick from './kick';
 
+// adding jQuery support to handle bootstrap and common vast plugin support
+const has$ = (window.jQuery ? true : false)
+const on = (el, arg, handler) => {has$ ? $(el).on(arg, handler) : el.addEventListener(arg, handler)}
+const off = (el, arg, handler) => {has$ ? $(el).off(arg, handler) : el.removeEventListener(arg, handler)}
+
 const getString = (value) => {
   return value != null ? value.toString() : undefined
 }
@@ -25,17 +30,17 @@ const binders = {
 
     unbind: function(el) {
       if (this.handler) {
-        el.removeEventListener(this.arg, this.handler)
+        off(el, this.arg, this.handler)
       }
     },
 
     routine: function(el, value) {
       if (this.handler) {
-        el.removeEventListener(this.arg, this.handler)
+        off(el, this.arg, this.handler)
       }
 
       this.handler = this.eventHandler(value)
-      el.addEventListener(this.arg, this.handler)
+      on(el, this.arg, this.handler)
     }
   },
 
@@ -151,16 +156,19 @@ const binders = {
   },
 
   // Order of ..& should be before .& otherwise match will trigger shorter length first
+  // removes the style from the element when there is value
   '-..&': function(el, value) {
     const propertyName = this.arg;
-    if (!value) {
-      el.style[propertyName] = value;
-    } else {
+    if (value) {
       el.style[propertyName] = '';
+    } else {
+      // do nothing
+      //el.style[propertyName] = value;
     }
   },
 
   // Order of ..& should be before .& otherwise match will trigger shorter length first
+  // Adds or removes the style from the element when there is value
   '..&': function(el, value) {
     const propertyName = this.arg;
     if (value) {
@@ -174,11 +182,11 @@ const binders = {
   '-.&': function(el, value) {
     let elClass = ` ${el.className} `
 
-    if (!value === (elClass.indexOf(` ${this.arg} `) > -1)) {
-      if (!value) {
-        el.className = `${el.className} ${this.arg}`
-      } else {
+    if (value === (elClass.indexOf(` ${this.arg} `) > -1)) {
+      if (value) {
         el.className = elClass.replace(` ${this.arg} `, ' ').trim()
+      } else {
+        el.className = `${el.className} ${this.arg}`
       }
     }
   },
@@ -228,6 +236,7 @@ const binders = {
 
   // Checks a checkbox or radio input when the value is true. Also sets the model
   // property when the input is checked or unchecked (two-way binder).
+  // also "@x"
   '@checked': {
     publishes: true,
     priority: 2000,
@@ -256,6 +265,7 @@ const binders = {
   },
   // Unchecks a checkbox or radio input when the value is true. Also sets the model
   // property when the input is checked or unchecked (two-way binder).
+  // also "@-x"
   '@unchecked': {
     publishes: true,
     priority: 2000,
@@ -405,7 +415,7 @@ const binders = {
     },
 
     routine: function(el, value) {
-      if (!!value !== this.attached) {
+      if (!!value === this.attached) {
         if (!value) {
 
           if (!this.nested) {
