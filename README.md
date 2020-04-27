@@ -1,6 +1,11 @@
 # kick
 
-kick.js is a variation of Rivets.js and tinybind, a lightweight data binding and templating system that facilitates building data-driven views. Inspired by many libraries like angular, react, angular-lite and vuejs. It is agnostic about every aspect of a front-end MV(C|VM|P) stack, making it easy to introduce it into your current workflow or to use it as part of your own custom front-end stack comprised of other libraries.
+Kick is a very small javascript binding library, inspired by rivets, tinybind,  vue and knockout.js
+Original Size: 23 KB
+GZIP Size(compressed): 7.5 KB
+
+
+jskick or kick is a variation of Rivets.js and tinybind, a lightweight data binding and templating system that facilitates building data-driven views. Inspired by many libraries like angular, react, angular-lite and vuejs. It is agnostic about every aspect of a front-end MV(C|VM|P) stack, making it easy to introduce it into your current workflow or to use it as part of your own custom front-end stack comprised of other libraries.
 
 If you like short syntax, and symbols for binding html then you will love it.
 
@@ -14,9 +19,6 @@ ToDo MVC with jskick, pay attention to the simple syntax https://stackblitz.com/
 
 You can also run examples (in examples folder) by installing npm i http-server
 
-## CAUTION: 
-
-Not ready for prod. Need help with few more things, like expression binding, testing, etc.
 
 
 ## Install
@@ -54,7 +56,7 @@ import kick from 'jskick'
 ```
 
 ```javascript
-	var vm = {
+var vm = {
     currentBid: 250.51, 
     timeLeft: 100, 
     product: {name: 'iPhone'}, 
@@ -78,35 +80,41 @@ import kick from 'jskick'
 ```
 View example at https://stackblitz.com/edit/jskick?file=index.html
 
+View ToDo MVC example at https://stackblitz.com/edit/jskick-todo?file=index.html
 
 ### Quick Reference for bindings
-* ^ or ^click (<a ^="userClicked()">Link</a>)
-* ^^ or ^dblclick (<a ^^="userDblClicked()">Link</a>)
-* ^_ or ^contextmenu (<a ^="userRightClicked()">Link</a>)
-* ^otherevent (e.g. <a ^mouseover="($event)">Link</a>)
-* ^@ or ^change (<input ^="userChanged()" type="text" @="model.property"></input>)
-* ^+ or ^focus (<input ^+="userFocused()" type="text" @="model.property"></input>)
-* ^- or ^blur (<input ^-="userBlurred()" type="text" @="model.property"></input>)
-* @ or @value (<input type="text" @="model.property"></input>)
-* @x or @checked (<input type="checkbox" @x="model.isChecked"></input>)
-* @-x or @unchecked (<input type="checkbox" @-x="model.isUnchecked"></input>)
-* : or :text (<div :="model.textProperty"></div>)
-* :: or :html (<div ::="model.htmlProperty"></div>)
-* $ or :html (<div $="model.htmlProperty"></div>)
-* + or :show (<div +="model.isVisible"></div>)
-* - or :hide (<div -="model.isHidden"></div>)
-* ~ or :disabled (<input type="text" ~="model.isDisabled"></input>)
-* -~ or :enabled (<input type="text" -~="model.isEnabled"></input>)
-* ~~ or :enabled (<input type="text" ~~="model.isEnabled"></input>)
-* 
-* ? (<div ?="model.ifTrue">Hello World!</div>)
-* -? (<div -?="model.ifFalse">Hello World!</div>)
-* 
-* . (<div .bg-primary="model.hasBG">Hello World!</div>)
-* -. (<div -.bg-primary="model.noBG">Hello World!</div>)
-* 
-* .. (<div ..font-size="model.fontSize">Added font size style</div>)
-* -.. (<div -..font-size="model.remFontSize">Removed Font size style</div>)
+| Binder              | Example |
+|---|---|
+| ^ or ^click         |&lt;a ^="userClicked()"&gt;Link&lt;/a&gt;|
+| ^^ or ^dblclick     |&lt;a ^^="userDblClicked()"&gt;Link&lt;/a&gt;|
+| ^_ or ^contextmenu  |&lt;a ^="userRightClicked()"&gt;Link&lt;/a&gt;|
+| ^otherevent         |&lt;a ^mouseover="($event)"&gt;Link&lt;/a&gt;|
+| ^@ or ^change       |&lt;input ^="userChanged()" type="text" @="model.property"&gt;&lt;/input&gt;|
+| ^+ or ^focus        |&lt;input ^+="userFocused()" type="text" @="model.property"&gt;&lt;/input&gt;|
+| ^- or ^blur         |&lt;input ^-="userBlurred()" type="text" @="model.property"&gt;&lt;/input&gt;|
+| @ or @value         |&lt;input type="text" @="model.property"&gt;&lt;/input&gt;)|
+| @x or @checked      |&lt;input type="checkbox" @x="model.isChecked"&gt;&lt;/input&gt;)|
+| @-x or @unchecked   |&lt;input type="checkbox" @-x="model.isUnchecked"&gt;&lt;/input&gt;)|
+| : or :text          |&lt;div :="model.textProperty"&gt;&lt;/div&gt;|
+| :: or :html         |&lt;div ::="model.htmlProperty"&gt;&lt;/div&gt;|
+| $ or :html          |&lt;div $="model.htmlProperty"&gt;&lt;/div&gt;|
+| + or :show          |&lt;div +="model.isVisible"&gt;&lt;/div&gt;|
+| - or :hide          |&lt;div -="model.isHidden"&gt;&lt;/div&gt;|
+| ~ or :disabled      |&lt;input type="text" ~="model.isDisabled"&gt;&lt;/input&gt;|
+| -~ or :enabled      |&lt;input type="text" -~="model.isEnabled"&gt;&lt;/input&gt;|
+| ~~ or :enabled      |&lt;input type="text" ~~="model.isEnabled"&gt;&lt;/input&gt;|
+| **Foreach** || 
+| *                   |&lt;div *="item in items"&gt;&lt;div :="item.title"&gt;&lt;/div&gt;&lt;/div&gt;|
+| *                   |&lt;div *item="items"&gt;&lt;div :="item.title"&gt;&lt;/div&gt;&lt;/div&gt;|
+| **Conditionals** || 
+| ?                   |&lt;div ?="model.ifTrue"&gt;Hello World!&lt;/div&gt;|
+| -?                  |&lt;div -?="model.ifFalse"&gt;Hello World!&lt;/div&gt;|
+| **Classe** || 
+| .                   |&lt;div .bg-primary="model.hasBG"&gt;Hello World!&lt;/div&gt;|
+| -.                  |&lt;div -.bg-primary="model.noBG"&gt;Hello World!&lt;/div&gt;|
+|**Style**|| 
+| ..                  |&lt;div ..font-size="model.fontSize"&gt;Added font size style&lt;/div&gt;|
+| -..                 |&lt;div -..font-size="model.remFontSize"&gt;Removed Font size style&lt;/div&gt;|
 
 ## Getting Started and Documentation
 
